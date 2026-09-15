@@ -2,63 +2,60 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
+use App\Models\Category;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $products = Product::with('category')->latest()->get();
+        $categories = Category::all();
+
+        return Inertia::render('Products/Index', [
+            'products' => $products,
+            'categories' => $categories
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'category_id' => 'required|exists:categories,id',
+            'sku' => 'required|string|max:255|unique:products,sku',
+            'name' => 'required|string|max:255',
+            'unit' => 'required|string|max:50',
+            'min_stock' => 'required|integer|min:0',
+            'price' => 'required|numeric|min:0',
+        ]);
+
+        Product::create($validated);
+
+        return redirect()->back()->with('success', 'Product created.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function update(Request $request, Product $product)
     {
-        //
+        $validated = $request->validate([
+            'category_id' => 'required|exists:categories,id',
+            'sku' => 'required|string|max:255|unique:products,sku,' . $product->id,
+            'name' => 'required|string|max:255',
+            'unit' => 'required|string|max:50',
+            'min_stock' => 'required|integer|min:0',
+            'price' => 'required|numeric|min:0',
+        ]);
+
+        $product->update($validated);
+
+        return redirect()->back()->with('success', 'Product updated.');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function destroy(Product $product)
     {
-        //
-    }
+        $product->delete();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return redirect()->back()->with('success', 'Product deleted.');
     }
 }
