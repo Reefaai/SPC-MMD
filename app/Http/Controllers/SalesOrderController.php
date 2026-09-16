@@ -2,20 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\SalesOrder;
-use App\Models\Product;
 use App\Models\InventoryTransaction;
+use App\Models\Product;
+use App\Models\SalesOrder;
+use App\Models\Warehouse;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class SalesOrderController extends Controller
 {
     public function index()
     {
-        $orders = SalesOrder::with('creator')->latest()->get();
+        $salesOrders = SalesOrder::with('creator')->latest()->get();
+        $products = Product::orderBy('name')->get();
+        $warehouses = Warehouse::orderBy('name')->get();
+
         return Inertia::render('SalesOrders/Index', [
-            'salesOrders' => $orders
+            'salesOrders' => $salesOrders,
+            'products' => $products,
+            'warehouses' => $warehouses,
         ]);
     }
 
@@ -34,7 +40,7 @@ class SalesOrderController extends Controller
             $so = SalesOrder::create([
                 'customer_name' => $validated['customer_name'],
                 'date' => $validated['date'],
-                'status' => 'Completed', // For MVP, assume it fulfills immediately
+                'status' => 'Completed',
                 'created_by' => $request->user()->id,
                 'total_amount' => 0,
             ]);
@@ -42,7 +48,7 @@ class SalesOrderController extends Controller
             $totalAmount = 0;
 
             foreach ($validated['items'] as $item) {
-                // Harga Snapshot: get price
+                // Snapshot Harga
                 $product = Product::find($item['product_id']);
                 $subtotal = $product->price * $item['quantity'];
 
@@ -53,7 +59,7 @@ class SalesOrderController extends Controller
                     'subtotal' => $subtotal,
                 ]);
 
-                // Inventory Transaction Logic for deducting stock (Shipment)
+                // Kurangi stok dari gudang
                 InventoryTransaction::create([
                     'product_id' => $item['product_id'],
                     'warehouse_id' => $validated['warehouse_id'],
@@ -70,14 +76,15 @@ class SalesOrderController extends Controller
             $so->update(['total_amount' => $totalAmount]);
         });
 
-        return redirect()->back()->with('success', 'Sales Order created and stock updated successfully.');
+        return redirect()->back()->with('success', 'Sales Order berhasil dibuat dan stok diperbarui.');
     }
 
     public function show(SalesOrder $salesOrder)
     {
         $salesOrder->load('items.product', 'creator');
+
         return Inertia::render('SalesOrders/Show', [
-            'salesOrder' => $salesOrder
+            'salesOrder' => $salesOrder,
         ]);
     }
 }

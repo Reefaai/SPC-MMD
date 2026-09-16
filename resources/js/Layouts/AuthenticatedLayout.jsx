@@ -24,23 +24,23 @@ export default function AuthenticatedLayout({ header, children }) {
                             </div>
 
                             <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                <NavLink
-                                    href={route('dashboard')}
-                                    active={route().current('dashboard')}
-                                >
+                                <NavLink href={route('dashboard')} active={route().current('dashboard')}>
                                     Dashboard
                                 </NavLink>
-                                <NavLink
-                                    href={route('categories.index')}
-                                    active={route().current('categories.*')}
-                                >
-                                    Categories
+                                <NavLink href={route('purchase-orders.index')} active={route().current('purchase-orders.*')}>
+                                    Purchase Orders
                                 </NavLink>
-                                <NavLink
-                                    href={route('products.index')}
-                                    active={route().current('products.*')}
-                                >
-                                    Products
+                                <NavLink href={route('receipts.index')} active={route().current('receipts.*')}>
+                                    Penerimaan
+                                </NavLink>
+                                <NavLink href={route('sales-orders.index')} active={route().current('sales-orders.*')}>
+                                    Sales Orders
+                                </NavLink>
+                                <NavLink href={route('products.index')} active={route().current('products.*')}>
+                                    Produk
+                                </NavLink>
+                                <NavLink href={route('categories.index')} active={route().current('categories.*')}>
+                                    Kategori
                                 </NavLink>
                             </div>
                         </div>

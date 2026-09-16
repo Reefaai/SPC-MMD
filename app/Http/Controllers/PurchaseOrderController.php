@@ -2,19 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PurchaseOrder;
 use App\Models\Product;
+use App\Models\PurchaseOrder;
+use App\Models\Supplier;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class PurchaseOrderController extends Controller
 {
     public function index()
     {
-        $pos = PurchaseOrder::with('supplier', 'creator')->latest()->get();
+        $purchaseOrders = PurchaseOrder::with('supplier', 'creator')->latest()->get();
+        $suppliers = Supplier::orderBy('name')->get();
+        $products = Product::orderBy('name')->get();
+
         return Inertia::render('PurchaseOrders/Index', [
-            'purchaseOrders' => $pos
+            'purchaseOrders' => $purchaseOrders,
+            'suppliers' => $suppliers,
+            'products' => $products,
         ]);
     }
 
@@ -40,7 +46,7 @@ class PurchaseOrderController extends Controller
             $totalAmount = 0;
 
             foreach ($validated['items'] as $item) {
-                // Harga Snapshot: Get price exactly when PO is created
+                // Snapshot Harga: ambil harga saat PO dibuat
                 $product = Product::find($item['product_id']);
                 $subtotal = $product->price * $item['quantity'];
 
@@ -57,31 +63,33 @@ class PurchaseOrderController extends Controller
             $po->update(['total_amount' => $totalAmount]);
         });
 
-        return redirect()->back()->with('success', 'Purchase Order created successfully.');
+        return redirect()->back()->with('success', 'Purchase Order berhasil dibuat.');
     }
 
     public function show(PurchaseOrder $purchaseOrder)
     {
         $purchaseOrder->load('supplier', 'items.product', 'creator');
+
         return Inertia::render('PurchaseOrders/Show', [
-            'purchaseOrder' => $purchaseOrder
+            'purchaseOrder' => $purchaseOrder,
         ]);
     }
 
     public function update(Request $request, PurchaseOrder $purchaseOrder)
     {
         $validated = $request->validate([
-            'status' => 'required|in:Draft,Pending,Approved,Completed,Cancelled'
+            'status' => 'required|in:Draft,Pending,Approved,Completed,Cancelled',
         ]);
 
         $purchaseOrder->update($validated);
 
-        return redirect()->back()->with('success', 'Purchase Order status updated.');
+        return redirect()->back()->with('success', 'Status Purchase Order diperbarui.');
     }
 
     public function destroy(PurchaseOrder $purchaseOrder)
     {
         $purchaseOrder->delete();
-        return redirect()->back()->with('success', 'Purchase Order deleted.');
+
+        return redirect()->back()->with('success', 'Purchase Order dihapus.');
     }
 }

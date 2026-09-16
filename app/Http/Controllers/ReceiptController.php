@@ -2,20 +2,28 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Receipt;
-use App\Models\PurchaseOrder;
 use App\Models\InventoryTransaction;
+use App\Models\PurchaseOrder;
+use App\Models\Receipt;
+use App\Models\Warehouse;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class ReceiptController extends Controller
 {
     public function index()
     {
-        $receipts = Receipt::with('purchaseOrder', 'warehouse', 'receiver')->latest()->get();
+        $receipts = Receipt::with('purchaseOrder.supplier', 'warehouse', 'receiver')->latest()->get();
+        $pendingPOs = PurchaseOrder::with('supplier', 'items.product')
+            ->whereIn('status', ['Pending', 'Approved'])
+            ->get();
+        $warehouses = Warehouse::orderBy('name')->get();
+
         return Inertia::render('Receipts/Index', [
-            'receipts' => $receipts
+            'receipts' => $receipts,
+            'pendingPOs' => $pendingPOs,
+            'warehouses' => $warehouses,
         ]);
     }
 
@@ -45,7 +53,7 @@ class ReceiptController extends Controller
                     'quantity_received' => $item['quantity_received'],
                 ]);
 
-                // Inventory Transaction Logic for adding stock
+                // Tambah stok di gudang
                 InventoryTransaction::create([
                     'product_id' => $item['product_id'],
                     'warehouse_id' => $validated['warehouse_id'],
@@ -57,19 +65,19 @@ class ReceiptController extends Controller
                 ]);
             }
 
-            // Update PO status to Completed
-            $po = PurchaseOrder::find($validated['purchase_order_id']);
-            $po->update(['status' => 'Completed']);
+            // Update status PO
+            PurchaseOrder::find($validated['purchase_order_id'])->update(['status' => 'Completed']);
         });
 
-        return redirect()->back()->with('success', 'Receipt created and stock updated successfully.');
+        return redirect()->back()->with('success', 'Penerimaan barang berhasil dicatat dan stok diperbarui.');
     }
 
     public function show(Receipt $receipt)
     {
         $receipt->load('purchaseOrder', 'warehouse', 'items.product', 'receiver');
+
         return Inertia::render('Receipts/Show', [
-            'receipt' => $receipt
+            'receipt' => $receipt,
         ]);
     }
 }
