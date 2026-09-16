@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm, router } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function Index({ purchaseOrders, suppliers, products }) {
@@ -162,7 +162,9 @@ export default function Index({ purchaseOrders, suppliers, products }) {
                                 <tbody className="bg-white divide-y divide-gray-200">
                                     {purchaseOrders.map((po) => (
                                         <tr key={po.id}>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">PO-{String(po.id).padStart(4, '0')}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600 hover:underline">
+                                                <Link href={route('purchase-orders.show', po.id)}>PO-{String(po.id).padStart(4, '0')}</Link>
+                                            </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{po.supplier?.name ?? '-'}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{po.date}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Rp {Number(po.total_amount).toLocaleString('id-ID')}</td>

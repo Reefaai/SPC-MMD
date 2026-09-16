@@ -2,63 +2,49 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Warehouse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class WarehouseController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        return Inertia::render('Warehouses/Index', [
+            'warehouses' => Warehouse::latest()->get(),
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'code' => 'required|string|max:50|unique:warehouses,code',
+            'name' => 'required|string|max:255',
+            'location' => 'nullable|string|max:255',
+        ]);
+
+        Warehouse::create($validated);
+
+        return redirect()->back()->with('success', 'Gudang berhasil ditambahkan.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function update(Request $request, Warehouse $warehouse)
     {
-        //
+        $validated = $request->validate([
+            'code' => 'required|string|max:50|unique:warehouses,code,'.$warehouse->id,
+            'name' => 'required|string|max:255',
+            'location' => 'nullable|string|max:255',
+        ]);
+
+        $warehouse->update($validated);
+
+        return redirect()->back()->with('success', 'Gudang berhasil diperbarui.');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function destroy(Warehouse $warehouse)
     {
-        //
-    }
+        $warehouse->delete();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return redirect()->back()->with('success', 'Gudang berhasil dihapus.');
     }
 }

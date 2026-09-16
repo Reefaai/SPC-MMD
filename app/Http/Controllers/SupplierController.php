@@ -2,63 +2,51 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Supplier;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class SupplierController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        return Inertia::render('Suppliers/Index', [
+            'suppliers' => Supplier::latest()->get(),
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'code' => 'required|string|max:50|unique:suppliers,code',
+            'name' => 'required|string|max:255',
+            'contact' => 'nullable|string|max:255',
+            'address' => 'nullable|string',
+        ]);
+
+        Supplier::create($validated);
+
+        return redirect()->back()->with('success', 'Supplier berhasil ditambahkan.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function update(Request $request, Supplier $supplier)
     {
-        //
+        $validated = $request->validate([
+            'code' => 'required|string|max:50|unique:suppliers,code,'.$supplier->id,
+            'name' => 'required|string|max:255',
+            'contact' => 'nullable|string|max:255',
+            'address' => 'nullable|string',
+        ]);
+
+        $supplier->update($validated);
+
+        return redirect()->back()->with('success', 'Supplier berhasil diperbarui.');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function destroy(Supplier $supplier)
     {
-        //
-    }
+        $supplier->delete();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return redirect()->back()->with('success', 'Supplier berhasil dihapus.');
     }
 }
