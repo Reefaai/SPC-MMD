@@ -6,6 +6,26 @@ export default function Index({ salesOrders, products, warehouses }) {
     const [showForm, setShowForm] = useState(false);
     const [items, setItems] = useState([{ product_id: '', quantity: 1 }]);
 
+    // Filter state
+    const [filterCustomer, setFilterCustomer] = useState('');
+    const [filterDateFrom, setFilterDateFrom] = useState('');
+    const [filterDateTo, setFilterDateTo] = useState('');
+
+    const filteredSOs = salesOrders.filter((so) => {
+        if (filterCustomer && !so.customer_name.toLowerCase().includes(filterCustomer.toLowerCase())) return false;
+        if (filterDateFrom && so.date < filterDateFrom) return false;
+        if (filterDateTo && so.date > filterDateTo) return false;
+        return true;
+    });
+
+    const resetFilters = () => {
+        setFilterCustomer('');
+        setFilterDateFrom('');
+        setFilterDateTo('');
+    };
+
+    const hasFilter = filterCustomer || filterDateFrom || filterDateTo;
+
     const { data, setData, post, processing, errors, reset } = useForm({
         customer_name: '',
         date: new Date().toISOString().split('T')[0],
@@ -141,6 +161,38 @@ export default function Index({ salesOrders, products, warehouses }) {
                     )}
 
                     <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
+                        <div className="p-4 border-b border-gray-200">
+                            <div className="flex flex-wrap gap-3 items-end">
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">Cari Pelanggan</label>
+                                    <input
+                                        type="text"
+                                        value={filterCustomer}
+                                        onChange={e => setFilterCustomer(e.target.value)}
+                                        placeholder="Nama pelanggan..."
+                                        className="rounded-md border-gray-300 shadow-sm text-sm"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">Dari Tanggal</label>
+                                    <input type="date" value={filterDateFrom} onChange={e => setFilterDateFrom(e.target.value)}
+                                        className="rounded-md border-gray-300 shadow-sm text-sm" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">Sampai Tanggal</label>
+                                    <input type="date" value={filterDateTo} onChange={e => setFilterDateTo(e.target.value)}
+                                        className="rounded-md border-gray-300 shadow-sm text-sm" />
+                                </div>
+                                {hasFilter && (
+                                    <button onClick={resetFilters} className="text-sm text-red-500 hover:text-red-700 underline pb-1">
+                                        Reset Filter
+                                    </button>
+                                )}
+                                <span className="text-xs text-gray-400 pb-1 ml-auto">
+                                    {filteredSOs.length} dari {salesOrders.length} SO
+                                </span>
+                            </div>
+                        </div>
                         <div className="p-6">
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50">
@@ -153,8 +205,8 @@ export default function Index({ salesOrders, products, warehouses }) {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {salesOrders.map((so) => (
-                                        <tr key={so.id}>
+                                    {filteredSOs.map((so) => (
+                                        <tr key={so.id} className="hover:bg-gray-50">
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600 hover:underline">
                                                 <Link href={route('sales-orders.show', so.id)}>SO-{String(so.id).padStart(4, '0')}</Link>
                                             </td>
@@ -166,9 +218,11 @@ export default function Index({ salesOrders, products, warehouses }) {
                                             </td>
                                         </tr>
                                     ))}
-                                    {salesOrders.length === 0 && (
+                                    {filteredSOs.length === 0 && (
                                         <tr>
-                                            <td colSpan="5" className="px-6 py-10 text-center text-sm text-gray-400">Belum ada Sales Order.</td>
+                                            <td colSpan="5" className="px-6 py-10 text-center text-sm text-gray-400">
+                                                {hasFilter ? 'Tidak ada SO yang sesuai filter.' : 'Belum ada Sales Order.'}
+                                            </td>
                                         </tr>
                                     )}
                                 </tbody>

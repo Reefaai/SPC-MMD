@@ -6,6 +6,29 @@ export default function Index({ purchaseOrders, suppliers, products }) {
     const [showForm, setShowForm] = useState(false);
     const [items, setItems] = useState([{ product_id: '', quantity: 1 }]);
 
+    // Filter state
+    const [filterStatus, setFilterStatus] = useState('');
+    const [filterSupplier, setFilterSupplier] = useState('');
+    const [filterDateFrom, setFilterDateFrom] = useState('');
+    const [filterDateTo, setFilterDateTo] = useState('');
+
+    const filteredPOs = purchaseOrders.filter((po) => {
+        if (filterStatus && po.status !== filterStatus) return false;
+        if (filterSupplier && !(po.supplier?.name ?? '').toLowerCase().includes(filterSupplier.toLowerCase())) return false;
+        if (filterDateFrom && po.date < filterDateFrom) return false;
+        if (filterDateTo && po.date > filterDateTo) return false;
+        return true;
+    });
+
+    const resetFilters = () => {
+        setFilterStatus('');
+        setFilterSupplier('');
+        setFilterDateFrom('');
+        setFilterDateTo('');
+    };
+
+    const hasFilter = filterStatus || filterSupplier || filterDateFrom || filterDateTo;
+
     const { data, setData, post, processing, errors, reset } = useForm({
         supplier_id: '',
         date: new Date().toISOString().split('T')[0],
@@ -146,8 +169,53 @@ export default function Index({ purchaseOrders, suppliers, products }) {
                         </div>
                     )}
 
-                    {/* Table */}
+                    {/* Filter Bar */}
                     <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
+                        <div className="p-4 border-b border-gray-200">
+                            <div className="flex flex-wrap gap-3 items-end">
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">Cari Supplier</label>
+                                    <input
+                                        type="text"
+                                        value={filterSupplier}
+                                        onChange={e => setFilterSupplier(e.target.value)}
+                                        placeholder="Nama supplier..."
+                                        className="rounded-md border-gray-300 shadow-sm text-sm"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">Status</label>
+                                    <select
+                                        value={filterStatus}
+                                        onChange={e => setFilterStatus(e.target.value)}
+                                        className="rounded-md border-gray-300 shadow-sm text-sm"
+                                    >
+                                        <option value="">Semua Status</option>
+                                        {['Draft','Pending','Approved','Completed','Cancelled'].map(s => (
+                                            <option key={s} value={s}>{s}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">Dari Tanggal</label>
+                                    <input type="date" value={filterDateFrom} onChange={e => setFilterDateFrom(e.target.value)}
+                                        className="rounded-md border-gray-300 shadow-sm text-sm" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">Sampai Tanggal</label>
+                                    <input type="date" value={filterDateTo} onChange={e => setFilterDateTo(e.target.value)}
+                                        className="rounded-md border-gray-300 shadow-sm text-sm" />
+                                </div>
+                                {hasFilter && (
+                                    <button onClick={resetFilters} className="text-sm text-red-500 hover:text-red-700 underline pb-1">
+                                        Reset Filter
+                                    </button>
+                                )}
+                                <span className="text-xs text-gray-400 pb-1 ml-auto">
+                                    {filteredPOs.length} dari {purchaseOrders.length} PO
+                                </span>
+                            </div>
+                        </div>
                         <div className="p-6">
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50">
@@ -160,8 +228,8 @@ export default function Index({ purchaseOrders, suppliers, products }) {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {purchaseOrders.map((po) => (
-                                        <tr key={po.id}>
+                                    {filteredPOs.map((po) => (
+                                        <tr key={po.id} className="hover:bg-gray-50">
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600 hover:underline">
                                                 <Link href={route('purchase-orders.show', po.id)}>PO-{String(po.id).padStart(4, '0')}</Link>
                                             </td>
@@ -173,9 +241,11 @@ export default function Index({ purchaseOrders, suppliers, products }) {
                                             </td>
                                         </tr>
                                     ))}
-                                    {purchaseOrders.length === 0 && (
+                                    {filteredPOs.length === 0 && (
                                         <tr>
-                                            <td colSpan="5" className="px-6 py-10 text-center text-sm text-gray-400">Belum ada Purchase Order.</td>
+                                            <td colSpan="5" className="px-6 py-10 text-center text-sm text-gray-400">
+                                                {hasFilter ? 'Tidak ada PO yang sesuai filter.' : 'Belum ada Purchase Order.'}
+                                            </td>
                                         </tr>
                                     )}
                                 </tbody>
