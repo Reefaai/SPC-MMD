@@ -4,7 +4,6 @@ import { useState } from 'react';
 
 export default function Index({ salesOrders, products, warehouses }) {
     const [showForm, setShowForm] = useState(false);
-    const [items, setItems] = useState([{ product_id: '', quantity: 1 }]);
 
     // Filter state
     const [filterCustomer, setFilterCustomer] = useState('');
@@ -30,23 +29,22 @@ export default function Index({ salesOrders, products, warehouses }) {
         customer_name: '',
         date: new Date().toISOString().split('T')[0],
         warehouse_id: '',
+        items: [{ product_id: '', quantity: 1 }],
     });
 
-    const addItem = () => setItems([...items, { product_id: '', quantity: 1 }]);
-    const removeItem = (index) => setItems(items.filter((_, i) => i !== index));
+    const addItem = () => setData('items', [...data.items, { product_id: '', quantity: 1 }]);
+    const removeItem = (index) => setData('items', data.items.filter((_, i) => i !== index));
     const updateItem = (index, field, value) => {
-        const updated = [...items];
+        const updated = [...data.items];
         updated[index][field] = value;
-        setItems(updated);
+        setData('items', updated);
     };
 
     const submit = (e) => {
         e.preventDefault();
         post(route('sales-orders.store'), {
-            data: { ...data, items },
             onSuccess: () => {
                 reset();
-                setItems([{ product_id: '', quantity: 1 }]);
                 setShowForm(false);
             },
         });
@@ -119,30 +117,35 @@ export default function Index({ salesOrders, products, warehouses }) {
                                             <label className="block text-sm font-medium text-gray-700">Item Produk</label>
                                             <button type="button" onClick={addItem} className="text-sm text-indigo-600 hover:text-indigo-900">+ Tambah Item</button>
                                         </div>
-                                        {items.map((item, index) => (
-                                            <div key={index} className="flex gap-3 mb-2 items-center">
-                                                <select
-                                                    value={item.product_id}
-                                                    onChange={e => updateItem(index, 'product_id', e.target.value)}
-                                                    className="flex-1 rounded-md border-gray-300 shadow-sm sm:text-sm"
-                                                    required
-                                                >
-                                                    <option value="">-- Pilih Produk --</option>
-                                                    {products.map(p => (
-                                                        <option key={p.id} value={p.id}>{p.name} (Rp {Number(p.price).toLocaleString('id-ID')})</option>
-                                                    ))}
-                                                </select>
-                                                <input
-                                                    type="number"
-                                                    min="1"
-                                                    value={item.quantity}
-                                                    onChange={e => updateItem(index, 'quantity', e.target.value)}
-                                                    className="w-24 rounded-md border-gray-300 shadow-sm sm:text-sm"
-                                                    placeholder="Qty"
-                                                    required
-                                                />
-                                                {items.length > 1 && (
-                                                    <button type="button" onClick={() => removeItem(index)} className="text-red-500 hover:text-red-700">✕</button>
+                                        {data.items.map((item, index) => (
+                                            <div key={index} className="mb-2">
+                                                <div className="flex gap-3 items-center">
+                                                    <select
+                                                        value={item.product_id}
+                                                        onChange={e => updateItem(index, 'product_id', e.target.value)}
+                                                        className="flex-1 rounded-md border-gray-300 shadow-sm sm:text-sm"
+                                                        required
+                                                    >
+                                                        <option value="">-- Pilih Produk --</option>
+                                                        {products.map(p => (
+                                                            <option key={p.id} value={p.id}>{p.name} (Rp {Number(p.price).toLocaleString('id-ID')})</option>
+                                                        ))}
+                                                    </select>
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        value={item.quantity}
+                                                        onChange={e => updateItem(index, 'quantity', e.target.value)}
+                                                        className={`w-24 rounded-md shadow-sm sm:text-sm ${errors[`items.${index}.quantity`] ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'}`}
+                                                        placeholder="Qty"
+                                                        required
+                                                    />
+                                                    {data.items.length > 1 && (
+                                                        <button type="button" onClick={() => removeItem(index)} className="text-red-500 hover:text-red-700">✕</button>
+                                                    )}
+                                                </div>
+                                                {errors[`items.${index}.quantity`] && (
+                                                    <div className="text-red-500 text-xs mt-1 text-right pr-8">{errors[`items.${index}.quantity`]}</div>
                                                 )}
                                             </div>
                                         ))}

@@ -5,12 +5,11 @@ import { useState } from 'react';
 export default function Index({ receipts, pendingPOs, warehouses }) {
     const [showForm, setShowForm] = useState(false);
     const [selectedPO, setSelectedPO] = useState(null);
-    const [items, setItems] = useState([]);
-
     const { data, setData, post, processing, reset } = useForm({
         purchase_order_id: '',
         warehouse_id: '',
         date: new Date().toISOString().split('T')[0],
+        items: [],
     });
 
     const handleSelectPO = (poId) => {
@@ -18,28 +17,28 @@ export default function Index({ receipts, pendingPOs, warehouses }) {
         const po = pendingPOs.find(p => p.id == poId);
         setSelectedPO(po);
         if (po) {
-            setItems(po.items.map(item => ({
+            setData('items', po.items.map(item => ({
                 product_id: item.product_id,
                 product_name: item.product?.name,
                 quantity_received: item.quantity,
             })));
+        } else {
+            setData('items', []);
         }
     };
 
     const updateQty = (index, value) => {
-        const updated = [...items];
+        const updated = [...data.items];
         updated[index].quantity_received = value;
-        setItems(updated);
+        setData('items', updated);
     };
 
     const submit = (e) => {
         e.preventDefault();
         post(route('receipts.store'), {
-            data: { ...data, items },
             onSuccess: () => {
                 reset();
                 setSelectedPO(null);
-                setItems([]);
                 setShowForm(false);
             },
         });
@@ -110,10 +109,10 @@ export default function Index({ receipts, pendingPOs, warehouses }) {
                                         </div>
                                     </div>
 
-                                    {items.length > 0 && (
+                                    {data.items.length > 0 && (
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">Konfirmasi Jumlah Diterima</label>
-                                            {items.map((item, index) => (
+                                            {data.items.map((item, index) => (
                                                 <div key={index} className="flex gap-3 mb-2 items-center">
                                                     <span className="flex-1 text-sm text-gray-700">{item.product_name}</span>
                                                     <input
@@ -131,7 +130,7 @@ export default function Index({ receipts, pendingPOs, warehouses }) {
 
                                     <button
                                         type="submit"
-                                        disabled={processing || items.length === 0}
+                                        disabled={processing || data.items.length === 0}
                                         className="inline-flex items-center rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
                                     >
                                         {processing ? 'Menyimpan...' : 'Konfirmasi Penerimaan'}

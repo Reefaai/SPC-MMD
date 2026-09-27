@@ -5,14 +5,18 @@ namespace App\Http\Controllers;
 use App\Models\InventoryTransaction;
 use App\Models\Product;
 use App\Models\PurchaseOrder;
+use App\Models\Receipt;
 use App\Models\SalesOrder;
 use App\Models\Supplier;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $roleName = $request->user()?->role?->name ?? '';
+
         $totalProducts = Product::count();
         $totalSuppliers = Supplier::count();
         $pendingPOs = PurchaseOrder::where('status', 'Pending')->count();
@@ -21,7 +25,7 @@ class DashboardController extends Controller
         $totalSOs = SalesOrder::count();
 
         // Stok per produk (IN - OUT)
-        $stockSummary = Product::select('products.id', 'products.name', 'products.min_stock')
+        $stockSummary = Product::select('products.id', 'products.name', 'products.sku', 'products.min_stock')
             ->withSum(['inventoryTransactions as stock_in' => function ($q) {
                 $q->where('type', 'IN');
             }], 'quantity')
@@ -39,10 +43,17 @@ class DashboardController extends Controller
         $lowStockCount = $stockSummary->where('is_low_stock', true)->count();
 
         // Transaksi terakhir
-        $recentTransactions = InventoryTransaction::with('product')
+        $recentTransactions = InventoryTransaction::with('product', 'warehouse')
             ->latest()
-            ->take(10)
+            ->take(8)
             ->get();
+
+        // Aktivitas SO hari ini (untuk Sales)
+        $todaySOs = SalesOrder::whereDate('date', today())->count();
+        $todaySOValue = SalesOrder::whereDate('date', today())->sum('total_amount');
+
+        // Aktivitas penerimaan hari ini (untuk Gudang)
+        $todayReceipts = Receipt::whereDate('date', today())->count();
 
         return Inertia::render('Dashboard', [
             'metrics' => [
@@ -53,9 +64,13 @@ class DashboardController extends Controller
                 'total_so_value' => $totalSOValue,
                 'total_sos' => $totalSOs,
                 'low_stock_count' => $lowStockCount,
+                'today_sos' => $todaySOs,
+                'today_so_value' => $todaySOValue,
+                'today_receipts' => $todayReceipts,
             ],
             'stockSummary' => $stockSummary,
             'recentTransactions' => $recentTransactions,
+            'userRole' => $roleName,
         ]);
     }
 }

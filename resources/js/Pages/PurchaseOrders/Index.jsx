@@ -4,7 +4,6 @@ import { useState } from 'react';
 
 export default function Index({ purchaseOrders, suppliers, products }) {
     const [showForm, setShowForm] = useState(false);
-    const [items, setItems] = useState([{ product_id: '', quantity: 1 }]);
 
     // Filter state
     const [filterStatus, setFilterStatus] = useState('');
@@ -28,29 +27,26 @@ export default function Index({ purchaseOrders, suppliers, products }) {
     };
 
     const hasFilter = filterStatus || filterSupplier || filterDateFrom || filterDateTo;
-
     const { data, setData, post, processing, errors, reset } = useForm({
         supplier_id: '',
         date: new Date().toISOString().split('T')[0],
-        items: [],
+        items: [{ product_id: '', quantity: 1 }],
     });
 
-    const addItem = () => setItems([...items, { product_id: '', quantity: 1 }]);
-    const removeItem = (index) => setItems(items.filter((_, i) => i !== index));
+    const addItem = () => setData('items', [...data.items, { product_id: '', quantity: 1 }]);
+    const removeItem = (index) => setData('items', data.items.filter((_, i) => i !== index));
 
     const updateItem = (index, field, value) => {
-        const updated = [...items];
+        const updated = [...data.items];
         updated[index][field] = value;
-        setItems(updated);
+        setData('items', updated);
     };
 
     const submit = (e) => {
         e.preventDefault();
         post(route('purchase-orders.store'), {
-            data: { ...data, items },
             onSuccess: () => {
                 reset();
-                setItems([{ product_id: '', quantity: 1 }]);
                 setShowForm(false);
             },
         });
@@ -128,7 +124,7 @@ export default function Index({ purchaseOrders, suppliers, products }) {
                                             <label className="block text-sm font-medium text-gray-700">Item Produk</label>
                                             <button type="button" onClick={addItem} className="text-sm text-indigo-600 hover:text-indigo-900">+ Tambah Item</button>
                                         </div>
-                                        {items.map((item, index) => (
+                                        {data.items.map((item, index) => (
                                             <div key={index} className="flex gap-3 mb-2 items-center">
                                                 <select
                                                     value={item.product_id}
@@ -150,7 +146,7 @@ export default function Index({ purchaseOrders, suppliers, products }) {
                                                     placeholder="Qty"
                                                     required
                                                 />
-                                                {items.length > 1 && (
+                                                {data.items.length > 1 && (
                                                     <button type="button" onClick={() => removeItem(index)} className="text-red-500 hover:text-red-700">✕</button>
                                                 )}
                                             </div>

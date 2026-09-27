@@ -9,11 +9,18 @@ export default function Show({ salesOrder }) {
                     <h2 className="text-xl font-semibold leading-tight text-gray-800">
                         Detail SO-{String(salesOrder.id).padStart(4, '0')}
                     </h2>
-                    <Link href={route('sales-orders.index')} className="text-sm text-indigo-600 hover:text-indigo-900">← Kembali</Link>
+                    <div className="flex items-center gap-3">
+                        <button onClick={() => window.print()} className="no-print inline-flex items-center gap-2 rounded-md bg-gray-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-gray-900">
+                            🖨 Print
+                        </button>
+                        <Link href={route('sales-orders.index')} className="no-print text-sm text-indigo-600 hover:text-indigo-900">← Kembali</Link>
+                    </div>
                 </div>
             }
         >
-            <Head title={`SO-${String(salesOrder.id).padStart(4, '0')}`} />
+            <Head title={`SO-${String(salesOrder.id).padStart(4, '0')}`}>
+                <style>{`@media print { .no-print { display: none !important; } nav { display: none !important; } header { box-shadow: none !important; } }`}</style>
+            </Head>
             <div className="py-12">
                 <div className="mx-auto max-w-4xl sm:px-6 lg:px-8 space-y-6">
 
@@ -26,6 +33,10 @@ export default function Show({ salesOrder }) {
                             <div>
                                 <p className="text-xs text-gray-500 uppercase font-medium">Tanggal</p>
                                 <p className="text-lg font-semibold text-gray-900 mt-1">{salesOrder.date}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-500 uppercase font-medium">Gudang Pengiriman</p>
+                                <p className="text-lg font-semibold text-gray-900 mt-1">{salesOrder.warehouse?.name ?? '—'}</p>
                             </div>
                             <div>
                                 <p className="text-xs text-gray-500 uppercase font-medium">Total Amount</p>

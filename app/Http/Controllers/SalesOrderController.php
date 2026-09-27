@@ -8,6 +8,7 @@ use App\Models\SalesOrder;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class SalesOrderController extends Controller
@@ -37,9 +38,37 @@ class SalesOrderController extends Controller
         ]);
 
         DB::transaction(function () use ($validated, $request) {
+            $validationErrors = [];
+
+            // Validasi stok mencukupi untuk semua item sebelum memproses apapun
+            foreach ($validated['items'] as $index => $item) {
+                $product = Product::findOrFail($item['product_id']);
+
+                $stockIn = InventoryTransaction::where('product_id', $item['product_id'])
+                    ->where('warehouse_id', $validated['warehouse_id'])
+                    ->where('type', 'IN')
+                    ->sum('quantity');
+
+                $stockOut = InventoryTransaction::where('product_id', $item['product_id'])
+                    ->where('warehouse_id', $validated['warehouse_id'])
+                    ->where('type', 'OUT')
+                    ->sum('quantity');
+
+                $availableStock = $stockIn - $stockOut;
+
+                if ($availableStock < $item['quantity']) {
+                    $validationErrors["items.{$index}.quantity"] = "Sisa stok hanya: {$availableStock}";
+                }
+            }
+
+            if (!empty($validationErrors)) {
+                throw ValidationException::withMessages($validationErrors);
+            }
+
             $so = SalesOrder::create([
                 'customer_name' => $validated['customer_name'],
                 'date' => $validated['date'],
+                'warehouse_id' => $validated['warehouse_id'],
                 'status' => 'Completed',
                 'created_by' => $request->user()->id,
                 'total_amount' => 0,
@@ -48,7 +77,6 @@ class SalesOrderController extends Controller
             $totalAmount = 0;
 
             foreach ($validated['items'] as $item) {
-                // Snapshot Harga
                 $product = Product::find($item['product_id']);
                 $subtotal = $product->price * $item['quantity'];
 
@@ -59,7 +87,6 @@ class SalesOrderController extends Controller
                     'subtotal' => $subtotal,
                 ]);
 
-                // Kurangi stok dari gudang
                 InventoryTransaction::create([
                     'product_id' => $item['product_id'],
                     'warehouse_id' => $validated['warehouse_id'],
@@ -81,7 +108,7 @@ class SalesOrderController extends Controller
 
     public function show(SalesOrder $salesOrder)
     {
-        $salesOrder->load('items.product', 'creator');
+        $salesOrder->load('items.product', 'creator', 'warehouse');
 
         return Inertia::render('SalesOrders/Show', [
             'salesOrder' => $salesOrder,
