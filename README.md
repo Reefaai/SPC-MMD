@@ -1,58 +1,119 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Supply Chain Management (SCM) System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sebuah aplikasi Supply Chain Management yang dibangun menggunakan **Laravel 11**, **React**, dan **Inertia.js** (berbasis arsitektur Monolith modern). Sistem ini dirancang untuk mengelola inventaris, pembelian (Purchase Orders), penerimaan barang (Receipts), penjualan (Sales Orders), pelaporan, dan sistem notifikasi *low-stock* secara real-time.
 
-## About Laravel
+## Fitur Utama
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Role-Based Access Control (RBAC):** Memiliki role Admin, Procurement, Gudang, dan Sales dengan hak akses spesifik.
+- **Master Data Management:** Pengelolaan Kategori, Produk, Supplier, dan Gudang.
+- **Purchase Orders & Receipts:** Siklus pengadaan barang (PO) dari supplier, disusul penerimaan fisik barang di gudang tujuan (menambah stok otomatis).
+- **Sales Orders:** Sistem penjualan ke pelanggan dengan validasi stok *real-time* per-gudang (mengurangi stok otomatis).
+- **Inventory Tracking:** Riwayat transaksi masuk/keluar stok (*double-entry method*) dengan perhitungan sisa stok mutlak setiap saat.
+- **Low-Stock Notification System:** Peringatan dini kepada Admin dan Procurement bila ada barang yang mencapai batas minimal stok (*threshold*), via notifikasi *dashboard*.
+- **Excel & PDF Export:** Laporan data komprehensif.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Prasyarat (*Requirements*)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Pastikan sistem Anda telah memiliki komponen-komponen berikut:
+- **PHP** >= 8.2
+- **Composer** (untuk PHP dependencies)
+- **Node.js** >= 18 & **NPM** (untuk frontend dependencies)
+- **MySQL** / MariaDB
+- Git
 
-## Learning Laravel
+## Instalasi (Clone & Development Ready)
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Ikuti langkah-langkah di bawah ini untuk menjalankan aplikasi di komputer lokal Anda:
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### 1. Clone Repository
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone <URL_REPOSITORY_ANDA>
+cd <NAMA_FOLDER_PROJECT>
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### 2. Install Dependencies
 
-## Contributing
+Install library PHP via Composer:
+```bash
+composer install
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Install package Node.js via NPM:
+```bash
+npm install
+```
 
-## Code of Conduct
+### 3. Konfigurasi Environment (Database)
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Copy file konfigurasi environment:
+```bash
+cp .env.example .env
+```
 
-## Security Vulnerabilities
+Buka file `.env` dan sesuaikan koneksi *database* Anda. Pastikan database MySQL dengan nama tersebut sudah Anda buat.
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=nama_database_anda
+DB_USERNAME=root
+DB_PASSWORD=password_anda
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 4. Generate Application Key
 
-## License
+```bash
+php artisan key:generate
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### 5. Migrate & Seed Database
+
+Langkah ini sangat penting untuk membangun tabel di database beserta **Data Dummy** (User, Produk, Stok, Transaksi) agar aplikasi siap diuji coba:
+
+```bash
+php artisan migrate:fresh --seed
+```
+
+### 6. Jalankan Server Development
+
+Aplikasi Laravel + React/Inertia membutuhkan **dua terminal** yang berjalan bersamaan di tahap *development*.
+
+**Terminal 1 (Vite Frontend Server):**
+```bash
+npm run dev
+```
+
+**Terminal 2 (Laravel Backend Server):**
+```bash
+php artisan serve
+```
+
+Aplikasi sekarang dapat diakses di browser melalui URL: `http://localhost:8000`
+
+---
+
+## Akun Login (Data Seed)
+
+Semua akun default menggunakan password **`password`**. 
+
+| Role | Email Login | Hak Akses |
+| --- | --- | --- |
+| **Admin** | `admin@example.com` | Akses penuh ke seluruh fitur dan master data. |
+| **Procurement** | `procurement@example.com` | Mengelola Supplier, Kategori, Produk, dan membuat Purchase Order. Menerima notifikasi *low-stock*. |
+| **Gudang** | `gudang@example.com` | Menerima barang (Receipt) dan memantau stok Gudang. |
+| **Sales** | `sales@example.com` | Membuat dan memantau Sales Order. |
+
+*(Anda bisa melihat daftar lengkap user *dummy* pada menu Dashboard Admin)*
+
+## Menjalankan Sistem Pengecekan Stok (Cron Job)
+
+Sistem memiliki sistem otomatis yang memeriksa stok barang setiap 6 jam. Namun untuk tujuan pengetesan, Anda dapat memicu peringatan *low-stock* secara manual melalui perintah berikut di terminal:
+
+```bash
+php artisan stock:check-low
+```
+Perintah ini akan mengecek semua stok dan mengirimkan notifikasi kepada user **Admin** dan **Procurement** jika ada barang yang jumlahnya di bawah batas *threshold* (5 unit).
+
+## Lisensi
+Aplikasi ini bersifat open-source.
