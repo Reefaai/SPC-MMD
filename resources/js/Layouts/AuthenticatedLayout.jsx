@@ -298,12 +298,7 @@ function Sidebar({ user, roleName, notifCount, isCollapsed, setIsCollapsed, isAc
 }
 
 // ── Mobile Slide-Over Drawer ─────────────────────────────────────
-function MobileDrawer({ isOpen, onClose, user, roleName, notifCount, isActive }) {
-    function logout() {
-        onClose();
-        router.post(route('logout'));
-    }
-
+function MobileDrawer({ isOpen, onClose, roleName, isActive }) {
     return (
         <>
             {/* Backdrop */}
@@ -313,70 +308,27 @@ function MobileDrawer({ isOpen, onClose, user, roleName, notifCount, isActive })
                 aria-hidden={!isOpen}
             />
 
-            {/* Off-canvas Sheet */}
+            {/* Off-canvas Sheet (slides from RIGHT) */}
             <aside className={`scm-mobile-drawer ${isOpen ? 'open' : ''}`} aria-label="Mobile Navigation">
                 {/* Header */}
                 <div className="scm-mobile-drawer-header">
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div className="scm-sidebar-logo-icon">
+                        <div className="scm-sidebar-logo-icon" style={{ width: 28, height: 28 }}>
                             {icons.scm}
                         </div>
                         <div>
-                            <div className="scm-sidebar-logo-text">SCM System</div>
-                            <div className="scm-sidebar-logo-sub">Enterprise Mobile</div>
+                            <div className="scm-sidebar-logo-text" style={{ fontSize: 13.5 }}>Menu Navigasi</div>
+                            <div className="scm-sidebar-logo-sub">SCM System</div>
                         </div>
                     </div>
                     <button
+                        type="button"
                         onClick={onClose}
                         className="scm-mobile-drawer-close"
                         aria-label="Tutup Menu"
                     >
                         {icons.close}
                     </button>
-                </div>
-
-                {/* Profile Card in Drawer */}
-                <div className="scm-mobile-drawer-profile">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div className="scm-avatar" style={{ width: 44, height: 44, fontSize: 16 }}>
-                            {user.name.charAt(0).toUpperCase()}
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                {user.name}
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
-                                <span className="scm-badge scm-badge-green" style={{ fontSize: 10, padding: '1px 6px' }}>
-                                    {roleName}
-                                </span>
-                                {notifCount > 0 && (
-                                    <span className="scm-badge scm-badge-red" style={{ fontSize: 10, padding: '1px 6px' }}>
-                                        {notifCount} notif
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 14 }}>
-                        <Link
-                            href={route('profile.edit')}
-                            onClick={onClose}
-                            className="scm-btn scm-btn-secondary scm-btn-sm"
-                            style={{ justifyContent: 'center' }}
-                        >
-                            <span style={{ width: 14, display: 'inline-flex' }}>{icons.settings}</span>
-                            Profil
-                        </Link>
-                        <button
-                            onClick={logout}
-                            className="scm-btn scm-btn-danger scm-btn-sm"
-                            style={{ justifyContent: 'center' }}
-                        >
-                            <span style={{ width: 14, display: 'inline-flex' }}>{icons.logOut}</span>
-                            Keluar
-                        </button>
-                    </div>
                 </div>
 
                 {/* Full Nav in Drawer */}
@@ -388,181 +340,207 @@ function MobileDrawer({ isOpen, onClose, user, roleName, notifCount, isActive })
     );
 }
 
-// ── Mobile Bottom Navigation Bar ─────────────────────────────────
-function MobileBottomNav({ roleName, isActive, notifCount, onOpenDrawer }) {
-    const isAdmin = roleName === 'Admin';
-    const isProcurement = roleName === 'Procurement';
-    const isGudang = roleName === 'Gudang';
-    const isSales = roleName === 'Sales';
-
-    return (
-        <nav className="scm-mobile-bottom-nav" aria-label="Bottom Quick Navigation">
-            {/* 1. Dashboard */}
-            <Link
-                href={route('dashboard')}
-                className={`scm-bottom-nav-item${isActive('dashboard') ? ' active' : ''}`}
-            >
-                {icons.dashboard}
-                <span>Home</span>
-            </Link>
-
-            {/* 2. Primary 1 based on role */}
-            {isAdmin && (
-                <Link
-                    href={route('purchase-orders.index')}
-                    className={`scm-bottom-nav-item${isActive('purchase-orders.*') ? ' active' : ''}`}
-                >
-                    {icons.shoppingCart}
-                    <span>PO</span>
-                </Link>
-            )}
-            {isProcurement && (
-                <Link
-                    href={route('purchase-orders.index')}
-                    className={`scm-bottom-nav-item${isActive('purchase-orders.*') ? ' active' : ''}`}
-                >
-                    {icons.shoppingCart}
-                    <span>PO</span>
-                </Link>
-            )}
-            {isGudang && (
-                <Link
-                    href={route('receipts.index')}
-                    className={`scm-bottom-nav-item${isActive('receipts') ? ' active' : ''}`}
-                >
-                    {icons.packageDown}
-                    <span>Terima</span>
-                </Link>
-            )}
-            {isSales && (
-                <Link
-                    href={route('sales-orders.index')}
-                    className={`scm-bottom-nav-item${isActive('sales-orders') ? ' active' : ''}`}
-                >
-                    {icons.clipboardList}
-                    <span>SO</span>
-                </Link>
-            )}
-
-            {/* 3. Primary 2: Inventori / Stok */}
-            <Link
-                href={route('inventory.index')}
-                className={`scm-bottom-nav-item${isActive('inventory') ? ' active' : ''}`}
-            >
-                {icons.package}
-                <span>Stok</span>
-            </Link>
-
-            {/* 4. Primary 3: SO (Admin) / Supplier (Procurement) / Gudang (Gudang) / Notifikasi */}
-            {isAdmin && (
-                <Link
-                    href={route('sales-orders.index')}
-                    className={`scm-bottom-nav-item${isActive('sales-orders') ? ' active' : ''}`}
-                >
-                    {icons.clipboardList}
-                    <span>SO</span>
-                </Link>
-            )}
-            {isProcurement && (
-                <Link
-                    href={route('suppliers.index')}
-                    className={`scm-bottom-nav-item${isActive('suppliers.*') ? ' active' : ''}`}
-                >
-                    {icons.truck}
-                    <span>Supplier</span>
-                </Link>
-            )}
-            {isGudang && (
-                <Link
-                    href={route('warehouses.index')}
-                    className={`scm-bottom-nav-item${isActive('warehouses') ? ' active' : ''}`}
-                >
-                    {icons.warehouse}
-                    <span>Gudang</span>
-                </Link>
-            )}
-            {isSales && (
-                <Link
-                    href={route('products.index')}
-                    className={`scm-bottom-nav-item${isActive('products') ? ' active' : ''}`}
-                >
-                    {icons.tag}
-                    <span>Produk</span>
-                </Link>
-            )}
-            {!isAdmin && !isProcurement && !isGudang && !isSales && (
-                <Link
-                    href={route('notifications.index')}
-                    className={`scm-bottom-nav-item${isActive('notifications') ? ' active' : ''}`}
-                >
-                    <div style={{ position: 'relative' }}>
-                        {icons.bell}
-                        {notifCount > 0 && <span className="scm-bottom-nav-dot" />}
-                    </div>
-                    <span>Notif</span>
-                </Link>
-            )}
-
-            {/* 5. Menu Drawer Trigger */}
-            <button
-                type="button"
-                onClick={onOpenDrawer}
-                className="scm-bottom-nav-item"
-                aria-label="Buka Semua Menu"
-            >
-                <div style={{ position: 'relative' }}>
-                    {icons.grid}
-                    {notifCount > 0 && <span className="scm-bottom-nav-dot" />}
-                </div>
-                <span>Menu</span>
-            </button>
-        </nav>
-    );
-}
-
 // ── Mobile Header ────────────────────────────────────────────────
-function MobileHeader({ header, notifCount, onOpenDrawer }) {
+function MobileHeader({ user, roleName, notifCount, onOpenDrawer }) {
+    const [profileOpen, setProfileOpen] = useState(false);
+    const profileRef = useRef(null);
+
+    useEffect(() => {
+        function handleOutsideClick(e) {
+            if (profileRef.current && !profileRef.current.contains(e.target)) {
+                setProfileOpen(false);
+            }
+        }
+        if (profileOpen) {
+            document.addEventListener('mousedown', handleOutsideClick);
+            document.addEventListener('touchstart', handleOutsideClick);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleOutsideClick);
+            document.removeEventListener('touchstart', handleOutsideClick);
+        };
+    }, [profileOpen]);
+
+    function logout() {
+        setProfileOpen(false);
+        router.post(route('logout'));
+    }
+
     return (
         <header className="scm-mobile-header">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-                <button
-                    onClick={onOpenDrawer}
-                    className="scm-mobile-icon-btn"
-                    aria-label="Buka Menu"
-                >
-                    {icons.menu}
-                </button>
-                <div className="scm-sidebar-logo-icon" style={{ width: 28, height: 28 }}>
+            {/* Left: Logo & Brand */}
+            <Link
+                href={route('dashboard')}
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    textDecoration: 'none',
+                    minWidth: 0,
+                }}
+            >
+                <div className="scm-sidebar-logo-icon" style={{ width: 32, height: 32, flexShrink: 0 }}>
                     {icons.scm}
                 </div>
                 <div style={{ minWidth: 0 }}>
-                    <div className="scm-mobile-header-title">
-                        {header || 'SCM System'}
+                    <div style={{
+                        fontFamily: 'var(--font-heading)',
+                        fontSize: 15,
+                        fontWeight: 700,
+                        color: 'var(--color-text)',
+                        lineHeight: 1.2,
+                        letterSpacing: '-0.01em',
+                    }}>
+                        SCM System
+                    </div>
+                    <div style={{
+                        fontSize: 10,
+                        color: 'var(--color-text-faint)',
+                        lineHeight: 1.2,
+                        letterSpacing: '0.02em',
+                    }}>
+                        Supply Chain
                     </div>
                 </div>
-            </div>
+            </Link>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Link
-                    href={route('notifications.index')}
-                    className="scm-mobile-icon-btn"
-                    style={{ position: 'relative' }}
-                    aria-label="Notifikasi"
-                >
-                    {icons.bell}
-                    {notifCount > 0 && (
-                        <span className="scm-mobile-badge-dot">
-                            {notifCount > 9 ? '9+' : notifCount}
-                        </span>
+            {/* Right: Profile Dropdown + Hamburger Menu */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                {/* Profile Avatar Button with Notification Badge & Dropdown */}
+                <div ref={profileRef} style={{ position: 'relative' }}>
+                    <button
+                        type="button"
+                        onClick={() => setProfileOpen(prev => !prev)}
+                        className="scm-mobile-avatar-btn"
+                        aria-label="Menu Pengguna"
+                        aria-expanded={profileOpen}
+                    >
+                        <div
+                            className="scm-avatar"
+                            style={{
+                                width: 34,
+                                height: 34,
+                                fontSize: 13,
+                                border: profileOpen ? '2px solid var(--color-primary)' : '2px solid transparent',
+                                transition: 'border-color var(--transition)',
+                            }}
+                        >
+                            {user.name.charAt(0).toUpperCase()}
+                        </div>
+                        {notifCount > 0 && (
+                            <span className="scm-mobile-avatar-badge">
+                                {notifCount > 9 ? '9+' : notifCount}
+                            </span>
+                        )}
+                    </button>
+
+                    {/* Profile Dropdown Menu */}
+                    {profileOpen && (
+                        <div className="scm-mobile-profile-dropdown">
+                            <div className="scm-mobile-profile-dropdown-header">
+                                <div className="scm-avatar" style={{ width: 38, height: 38, fontSize: 14, flexShrink: 0 }}>
+                                    {user.name.charAt(0).toUpperCase()}
+                                </div>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{
+                                        fontSize: 13,
+                                        fontWeight: 700,
+                                        color: 'var(--color-text)',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                    }}>
+                                        {user.name}
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
+                                        <span className="scm-badge scm-badge-green" style={{ fontSize: 9.5, padding: '1px 6px' }}>
+                                            {roleName}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style={{ padding: '6px' }}>
+                                <Link
+                                    href={route('notifications.index')}
+                                    onClick={() => setProfileOpen(false)}
+                                    className="scm-dropdown-item"
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        padding: '10px 12px',
+                                        borderRadius: 'var(--radius)',
+                                    }}
+                                >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                        <div style={{ width: 16, height: 16, color: 'var(--color-text-muted)' }}>
+                                            {icons.bell}
+                                        </div>
+                                        <span>Notifikasi</span>
+                                    </div>
+                                    {notifCount > 0 ? (
+                                        <span className="scm-badge scm-badge-red" style={{ fontSize: 9.5, padding: '1px 6px' }}>
+                                            {notifCount > 9 ? '9+' : notifCount} baru
+                                        </span>
+                                    ) : (
+                                        <span style={{ fontSize: 11, color: 'var(--color-text-faint)' }}>0</span>
+                                    )}
+                                </Link>
+
+                                <Link
+                                    href={route('profile.edit')}
+                                    onClick={() => setProfileOpen(false)}
+                                    className="scm-dropdown-item"
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 10,
+                                        padding: '10px 12px',
+                                        borderRadius: 'var(--radius)',
+                                    }}
+                                >
+                                    <div style={{ width: 16, height: 16, color: 'var(--color-text-muted)' }}>
+                                        {icons.settings}
+                                    </div>
+                                    <span>Pengaturan Profil</span>
+                                </Link>
+
+                                <div className="scm-dropdown-divider" style={{ margin: '4px 0' }} />
+
+                                <button
+                                    type="button"
+                                    onClick={logout}
+                                    className="scm-dropdown-item"
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 10,
+                                        padding: '10px 12px',
+                                        color: '#F87171',
+                                        width: '100%',
+                                        borderRadius: 'var(--radius)',
+                                    }}
+                                >
+                                    <div style={{ width: 16, height: 16 }}>
+                                        {icons.logOut}
+                                    </div>
+                                    <span>Keluar</span>
+                                </button>
+                            </div>
+                        </div>
                     )}
-                </Link>
-                <Link
-                    href={route('profile.edit')}
+                </div>
+
+                {/* Hamburger Menu Button */}
+                <button
+                    type="button"
+                    onClick={onOpenDrawer}
                     className="scm-mobile-icon-btn"
-                    aria-label="Profil Saya"
+                    aria-label="Buka Menu Navigasi"
                 >
-                    {icons.settings}
-                </Link>
+                    {icons.menu}
+                </button>
             </div>
         </header>
     );
@@ -621,20 +599,19 @@ export default function AuthenticatedLayout({ children, header }) {
                 isActive={isActive}
             />
 
-            {/* Mobile Header (sticky top) */}
+            {/* Mobile Header (sticky top: Logo + Profile Dropdown + Hamburger) */}
             <MobileHeader
-                header={header}
+                user={user}
+                roleName={roleName}
                 notifCount={notifCount}
                 onOpenDrawer={() => setIsDrawerOpen(true)}
             />
 
-            {/* Mobile Slide-Over Drawer */}
+            {/* Mobile Slide-Over Drawer (slides from right) */}
             <MobileDrawer
                 isOpen={isDrawerOpen}
                 onClose={() => setIsDrawerOpen(false)}
-                user={user}
                 roleName={roleName}
-                notifCount={notifCount}
                 isActive={isActive}
             />
 
@@ -644,14 +621,6 @@ export default function AuthenticatedLayout({ children, header }) {
                     {children}
                 </main>
             </div>
-
-            {/* Mobile Bottom Navigation Bar (Dock) */}
-            <MobileBottomNav
-                roleName={roleName}
-                isActive={isActive}
-                notifCount={notifCount}
-                onOpenDrawer={() => setIsDrawerOpen(true)}
-            />
         </div>
     );
 }

@@ -1,16 +1,16 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 
 // ── Metric Card ───────────────────────────────────────────────────
 function MetricCard({ title, value, subtitle, iconBg = '#6366F1', icon, vertical = false }) {
     return (
-        <div className="scm-metric" style={vertical ? { flexDirection: 'column', alignItems: 'flex-start', gap: 12 } : {}}>
+        <div className={`scm-metric${vertical ? ' scm-metric-vertical' : ''}`}>
             <div className="scm-metric-icon" style={{ background: iconBg + '22', border: `1px solid ${iconBg}44` }}>
-                <svg viewBox="0 0 24 24" fill="none" stroke={iconBg} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" style={{ width: 20, height: 20 }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke={iconBg} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" style={{ width: 18, height: 18 }}>
                     {icon}
                 </svg>
             </div>
-            <div style={{ flex: 1, minWidth: 0, width: '100%' }}>
+            <div className="scm-metric-info">
                 <div className="scm-metric-label">{title}</div>
                 <div className="scm-metric-value">{value}</div>
                 {subtitle && <div className="scm-metric-sub">{subtitle}</div>}
@@ -105,6 +105,7 @@ function TxTypeBadge({ type }) {
 
 // ─────────────────────────────────────────────────────────────────
 export default function Dashboard({ metrics = {}, charts = {}, stockSummary = [], recentTransactions = [], userRole = '' }) {
+    const { auth } = usePage().props;
     const fmt = (val) => `Rp ${Number(val ?? 0).toLocaleString('id-ID')}`;
 
     const isAdmin       = userRole === 'Admin';
@@ -128,49 +129,62 @@ export default function Dashboard({ metrics = {}, charts = {}, stockSummary = []
         <AuthenticatedLayout header="Dashboard">
             <Head title="Dashboard" />
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
                 {/* ── Welcome Banner ──────────────────────────── */}
-                <div className="scm-welcome-banner" style={{
-                    background: 'linear-gradient(135deg, #2C322C 0%, #384038 100%)',
-                    border: '1px solid rgba(147,215,140,0.3)',
-                    borderRadius: 'var(--radius-xl)',
-                    padding: '20px 24px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 16,
-                }}>
-                    <div>
-                        <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: '#B8F2B0', marginBottom: 4 }}>
-                            Supply Chain Management
+                <div className="scm-welcome-banner">
+                    <div className="scm-welcome-content">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                            <span style={{
+                                fontSize: 10.5, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase',
+                                color: '#B8F2B0', background: 'rgba(184, 242, 176, 0.12)',
+                                padding: '2px 8px', borderRadius: 4, display: 'inline-block'
+                            }}>
+                                Supply Chain Management
+                            </span>
                         </div>
                         <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 22, fontWeight: 700, color: 'var(--color-text)', margin: 0, lineHeight: 1.2 }}>
-                            Selamat Datang
+                            Selamat Datang{auth?.user?.name ? `, ${auth.user.name}` : ''}
                         </h1>
                         <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginTop: 4, marginBottom: 0 }}>
-                            Ringkasan aktivitas dan status operasional hari ini
+                            Ringkasan aktivitas dan status operasional sistem hari ini
                         </p>
                     </div>
-                    {metrics.low_stock_count > 0 && (
-                        <Link href={route('inventory.index')} style={{ textDecoration: 'none' }}>
-                            <div style={{
-                                background: 'rgba(239,68,68,0.12)',
-                                border: '1px solid rgba(239,68,68,0.35)',
-                                borderRadius: 'var(--radius-lg)',
-                                padding: '10px 16px',
-                                display: 'flex', alignItems: 'center', gap: 10,
-                                cursor: 'pointer',
-                            }}>
-                                <svg viewBox="0 0 24 24" fill="none" stroke="#F87171" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" style={{ width: 20, height: 20, flexShrink: 0 }}>
-                                    {iconPaths.alert}
-                                </svg>
-                                <div>
-                                    <div style={{ fontSize: 13, fontWeight: 700, color: '#F87171', fontFamily: 'var(--font-heading)' }}>{metrics.low_stock_count} Produk Menipis</div>
-                                    <div style={{ fontSize: 11, color: '#F8717199' }}>Klik untuk detail →</div>
+
+                    {metrics.low_stock_count > 0 ? (
+                        <Link href={route('inventory.index')} className="scm-welcome-alert-link">
+                            <div className="scm-welcome-alert-card">
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                    <div className="scm-alert-icon-wrap">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="#F87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 18, height: 18 }}>
+                                            {iconPaths.alert}
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: 13.5, fontWeight: 700, color: '#F87171', fontFamily: 'var(--font-heading)', lineHeight: 1.2 }}>
+                                            {metrics.low_stock_count} Produk Menipis
+                                        </div>
+                                        <div style={{ fontSize: 11, color: 'rgba(248, 113, 113, 0.75)', marginTop: 2 }}>
+                                            Stok di bawah batas minimum
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="scm-welcome-alert-action">
+                                    <span>Lihat Detail</span>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: 13, height: 13 }}>
+                                        <polyline points="9 18 15 12 9 6" />
+                                    </svg>
                                 </div>
                             </div>
                         </Link>
+                    ) : (
+                        <div className="scm-welcome-status-card">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#34D399', boxShadow: '0 0 8px #34D399' }} />
+                                <span style={{ fontSize: 12.5, fontWeight: 600, color: '#34D399' }}>Semua Stok Optimal</span>
+                            </div>
+                            <span style={{ fontSize: 11, color: 'var(--color-text-faint)' }}>Tidak ada produk menipis</span>
+                        </div>
                     )}
                 </div>
 
@@ -178,9 +192,9 @@ export default function Dashboard({ metrics = {}, charts = {}, stockSummary = []
                 {isAdmin && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                         <div className="scm-grid-metrics">
-                            <MetricCard title="Total Penjualan" value={fmt(metrics.total_so_value)} iconBg="#5FD475" icon={iconPaths.dollar} />
-                            <MetricCard title="Total Nilai PO" value={fmt(metrics.total_po_value)} iconBg="#B8F2B0" icon={iconPaths.cart} />
-                            <MetricCard title="PO Pending" value={metrics.pending_pos ?? 0} subtitle="Menunggu Persetujuan" iconBg="#FFB951" icon={iconPaths.clock} />
+                            <MetricCard title="Total Penjualan" value={fmt(metrics.total_so_value)} subtitle="Sepanjang waktu" iconBg="#5FD475" icon={iconPaths.dollar} />
+                            <MetricCard title="Total Nilai PO" value={fmt(metrics.total_po_value)} subtitle="Sepanjang waktu" iconBg="#B8F2B0" icon={iconPaths.cart} />
+                            <MetricCard title="PO Pending" value={metrics.pending_pos ?? 0} subtitle="Menunggu persetujuan" iconBg="#FFB951" icon={iconPaths.clock} />
                             <MetricCard title="Stok Menipis" value={metrics.low_stock_count ?? 0} subtitle="Di bawah minimum" iconBg={metrics.low_stock_count > 0 ? '#FFB4AB' : '#10B981'} icon={iconPaths.alert} />
                         </div>
                         <div className="scm-bento-grid">
@@ -194,8 +208,8 @@ export default function Dashboard({ metrics = {}, charts = {}, stockSummary = []
                                 </div>
                             </div>
                             <div className="scm-bento-metrics">
-                                <MetricCard vertical title="Total Produk" value={metrics.total_products ?? 0} iconBg="#93D78C" icon={iconPaths.box} />
-                                <MetricCard vertical title="Total Supplier" value={metrics.total_suppliers ?? 0} iconBg="#A8C7FA" icon={iconPaths.truck} />
+                                <MetricCard vertical title="Total Produk" value={metrics.total_products ?? 0} subtitle="Katalog aktif" iconBg="#93D78C" icon={iconPaths.box} />
+                                <MetricCard vertical title="Total Supplier" value={metrics.total_suppliers ?? 0} subtitle="Mitra terdaftar" iconBg="#A8C7FA" icon={iconPaths.truck} />
                                 <MetricCard vertical title="Sales Order" value={metrics.total_sos ?? 0} subtitle="Total Trx" iconBg="#93D78C" icon={iconPaths.list} />
                                 <MetricCard vertical title="Penerimaan" value={metrics.today_receipts ?? 0} subtitle="Hari ini" iconBg="#A8C7FA" icon={iconPaths.download} />
                             </div>
@@ -206,8 +220,8 @@ export default function Dashboard({ metrics = {}, charts = {}, stockSummary = []
                 {/* ── Procurement Metrics ─────────────────────── */}
                 {!isAdmin && isProcurement && (
                     <div className="scm-grid-metrics">
-                        <MetricCard title="Total Produk" value={metrics.total_products ?? 0} iconBg="#93D78C" icon={iconPaths.box} />
-                        <MetricCard title="Total Supplier" value={metrics.total_suppliers ?? 0} iconBg="#A8C7FA" icon={iconPaths.truck} />
+                        <MetricCard title="Total Produk" value={metrics.total_products ?? 0} subtitle="Katalog aktif" iconBg="#93D78C" icon={iconPaths.box} />
+                        <MetricCard title="Total Supplier" value={metrics.total_suppliers ?? 0} subtitle="Mitra terdaftar" iconBg="#A8C7FA" icon={iconPaths.truck} />
                         <MetricCard title="PO Pending" value={metrics.pending_pos ?? 0} subtitle="Menunggu persetujuan" iconBg="#FFB951" icon={iconPaths.clock} />
                         <MetricCard title="Total Nilai PO" value={fmt(metrics.total_po_value)} subtitle="Sepanjang waktu" iconBg="#B8F2B0" icon={iconPaths.cart} />
                     </div>
@@ -216,7 +230,7 @@ export default function Dashboard({ metrics = {}, charts = {}, stockSummary = []
                 {/* ── Gudang Metrics ──────────────────────────── */}
                 {!isAdmin && isGudang && !isProcurement && (
                     <div className="scm-grid-metrics">
-                        <MetricCard title="Total Produk" value={metrics.total_products ?? 0} iconBg="#93D78C" icon={iconPaths.box} />
+                        <MetricCard title="Total Produk" value={metrics.total_products ?? 0} subtitle="Katalog aktif" iconBg="#93D78C" icon={iconPaths.box} />
                         <MetricCard title="Penerimaan Hari Ini" value={metrics.today_receipts ?? 0} subtitle="Barang masuk hari ini" iconBg="#A8C7FA" icon={iconPaths.download} />
                         <MetricCard title="Stok Menipis" value={metrics.low_stock_count ?? 0} subtitle="Di bawah minimum" iconBg={metrics.low_stock_count > 0 ? '#FFB4AB' : '#10B981'} icon={iconPaths.alert} />
                     </div>
@@ -226,7 +240,7 @@ export default function Dashboard({ metrics = {}, charts = {}, stockSummary = []
                 {!isAdmin && !isProcurement && !isGudang && isSales && (
                     <div className="scm-grid-metrics">
                         <MetricCard title="SO Hari Ini" value={metrics.today_sos ?? 0} subtitle="Order masuk hari ini" iconBg="#5FD475" icon={iconPaths.list} />
-                        <MetricCard title="Nilai SO Hari Ini" value={fmt(metrics.today_so_value)} iconBg="#FFB951" icon={iconPaths.dollar} />
+                        <MetricCard title="Nilai SO Hari Ini" value={fmt(metrics.today_so_value)} subtitle="Omset hari ini" iconBg="#FFB951" icon={iconPaths.dollar} />
                         <MetricCard title="Total Sales Order" value={metrics.total_sos ?? 0} subtitle="Semua transaksi" iconBg="#93D78C" icon={iconPaths.list} />
                         <MetricCard title="Total Penjualan" value={fmt(metrics.total_so_value)} subtitle="Sepanjang waktu" iconBg="#B8F2B0" icon={iconPaths.dollar} />
                     </div>
@@ -244,32 +258,58 @@ export default function Dashboard({ metrics = {}, charts = {}, stockSummary = []
                                     Lihat Detail →
                                 </Link>
                             </div>
-                            <div className="scm-table-responsive">
-                                <table className="scm-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Produk</th>
-                                            <th style={{ textAlign: 'right' }}>Stok</th>
-                                            <th style={{ textAlign: 'right' }}>Min.</th>
-                                            <th style={{ textAlign: 'center' }}>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {stockSummary.length === 0 ? (
-                                            <tr><td colSpan="4" style={{ textAlign: 'center', padding: '32px', color: 'var(--color-text-faint)' }}>Belum ada data stok.</td></tr>
-                                        ) : stockSummary.slice(0, 8).map((product) => (
-                                            <tr key={product.id}>
-                                                <td>
-                                                    <div style={{ fontWeight: 500 }}>{product.name}</div>
-                                                    <div style={{ fontSize: 11, color: 'var(--color-text-faint)' }}>{product.sku}</div>
-                                                </td>
-                                                <td style={{ textAlign: 'right', fontWeight: 600, fontFamily: 'var(--font-heading)', color: product.is_low_stock ? '#F87171' : 'var(--color-text)' }}>{product.current_stock}</td>
-                                                <td style={{ textAlign: 'right', color: 'var(--color-text-faint)' }}>{product.min_stock}</td>
-                                                <td style={{ textAlign: 'center' }}><StockBadge isLow={product.is_low_stock} /></td>
+                            
+                            {/* Desktop Table View */}
+                            <div className="scm-desktop-view">
+                                <div className="scm-table-responsive">
+                                    <table className="scm-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Produk</th>
+                                                <th style={{ textAlign: 'right' }}>Stok</th>
+                                                <th style={{ textAlign: 'right' }}>Min.</th>
+                                                <th style={{ textAlign: 'center' }}>Status</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            {stockSummary.length === 0 ? (
+                                                <tr><td colSpan="4" style={{ textAlign: 'center', padding: '32px', color: 'var(--color-text-faint)' }}>Belum ada data stok.</td></tr>
+                                            ) : stockSummary.slice(0, 8).map((product) => (
+                                                <tr key={product.id}>
+                                                    <td>
+                                                        <div style={{ fontWeight: 500 }}>{product.name}</div>
+                                                        <div style={{ fontSize: 11, color: 'var(--color-text-faint)' }}>{product.sku}</div>
+                                                    </td>
+                                                    <td style={{ textAlign: 'right', fontWeight: 600, fontFamily: 'var(--font-heading)', color: product.is_low_stock ? '#F87171' : 'var(--color-text)' }}>{product.current_stock}</td>
+                                                    <td style={{ textAlign: 'right', color: 'var(--color-text-faint)' }}>{product.min_stock}</td>
+                                                    <td style={{ textAlign: 'center' }}><StockBadge isLow={product.is_low_stock} /></td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            {/* Mobile Compact List */}
+                            <div className="scm-mobile-view">
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '12px' }}>
+                                    {stockSummary.length === 0 ? (
+                                        <div style={{ textAlign: 'center', padding: '24px', color: 'var(--color-text-faint)', fontSize: 13 }}>Belum ada data stok.</div>
+                                    ) : stockSummary.slice(0, 6).map((product) => (
+                                        <div key={product.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: 'var(--color-surface-2)', borderRadius: 'var(--radius)', border: '1px solid var(--color-border)' }}>
+                                            <div>
+                                                <div style={{ fontWeight: 600, fontSize: 13.5, color: 'var(--color-text)' }}>{product.name}</div>
+                                                <div style={{ fontSize: 11, color: 'var(--color-text-faint)', marginTop: 2 }}>{product.sku} • Min: {product.min_stock} pcs</div>
+                                            </div>
+                                            <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3 }}>
+                                                <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 14, color: product.is_low_stock ? '#F87171' : 'var(--color-text)' }}>
+                                                    {product.current_stock} pcs
+                                                </span>
+                                                <StockBadge isLow={product.is_low_stock} />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     )}
@@ -279,29 +319,55 @@ export default function Dashboard({ metrics = {}, charts = {}, stockSummary = []
                         <div className="scm-card-header">
                             <span className="scm-card-title">Transaksi Inventori Terakhir</span>
                         </div>
-                        <div className="scm-table-responsive">
-                            <table className="scm-table">
-                                <thead>
-                                    <tr>
-                                        <th>Produk</th>
-                                        <th>Tipe</th>
-                                        <th style={{ textAlign: 'right' }}>Qty</th>
-                                        <th>Gudang</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {recentTransactions.length === 0 ? (
-                                        <tr><td colSpan="4" style={{ textAlign: 'center', padding: '32px', color: 'var(--color-text-faint)' }}>Belum ada transaksi.</td></tr>
-                                    ) : recentTransactions.map((trx) => (
-                                        <tr key={trx.id}>
-                                            <td style={{ fontWeight: 500 }}>{trx.product?.name ?? '—'}</td>
-                                            <td><TxTypeBadge type={trx.type} /></td>
-                                            <td style={{ textAlign: 'right', fontWeight: 600, fontFamily: 'var(--font-heading)' }}>{trx.quantity}</td>
-                                            <td style={{ color: 'var(--color-text-muted)', fontSize: 12 }}>{trx.warehouse?.name ?? '—'}</td>
+                        
+                        {/* Desktop Table View */}
+                        <div className="scm-desktop-view">
+                            <div className="scm-table-responsive">
+                                <table className="scm-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Produk</th>
+                                            <th>Tipe</th>
+                                            <th style={{ textAlign: 'right' }}>Qty</th>
+                                            <th>Gudang</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {recentTransactions.length === 0 ? (
+                                            <tr><td colSpan="4" style={{ textAlign: 'center', padding: '32px', color: 'var(--color-text-faint)' }}>Belum ada transaksi.</td></tr>
+                                        ) : recentTransactions.map((trx) => (
+                                            <tr key={trx.id}>
+                                                <td style={{ fontWeight: 500 }}>{trx.product?.name ?? '—'}</td>
+                                                <td><TxTypeBadge type={trx.type} /></td>
+                                                <td style={{ textAlign: 'right', fontWeight: 600, fontFamily: 'var(--font-heading)' }}>{trx.quantity}</td>
+                                                <td style={{ color: 'var(--color-text-muted)', fontSize: 12 }}>{trx.warehouse?.name ?? '—'}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* Mobile Compact List */}
+                        <div className="scm-mobile-view">
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '12px' }}>
+                                {recentTransactions.length === 0 ? (
+                                    <div style={{ textAlign: 'center', padding: '24px', color: 'var(--color-text-faint)', fontSize: 13 }}>Belum ada transaksi.</div>
+                                ) : recentTransactions.slice(0, 6).map((trx) => (
+                                    <div key={trx.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: 'var(--color-surface-2)', borderRadius: 'var(--radius)', border: '1px solid var(--color-border)' }}>
+                                        <div>
+                                            <div style={{ fontWeight: 600, fontSize: 13.5, color: 'var(--color-text)' }}>{trx.product?.name ?? '—'}</div>
+                                            <div style={{ fontSize: 11, color: 'var(--color-text-faint)', marginTop: 2 }}>{trx.warehouse?.name ?? '—'}</div>
+                                        </div>
+                                        <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3 }}>
+                                            <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 14 }}>
+                                                {trx.quantity} pcs
+                                            </span>
+                                            <TxTypeBadge type={trx.type} />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>

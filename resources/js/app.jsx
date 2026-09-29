@@ -23,3 +23,17 @@ createInertiaApp({
         color: '#4B5563',
     },
 });
+
+// Auto-open native calendar date picker on tap/click anywhere inside date inputs
+if (typeof window !== 'undefined') {
+    document.addEventListener('click', (e) => {
+        const dateInput = e.target?.closest ? e.target.closest('input[type="date"]') : null;
+        if (dateInput && typeof dateInput.showPicker === 'function') {
+            try {
+                dateInput.showPicker();
+            } catch (err) {
+                // Ignore if showPicker cannot be called
+            }
+        }
+    });
+}

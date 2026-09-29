@@ -49,7 +49,8 @@ export default function Show({ salesOrder }) {
                         <StatusBadge status={salesOrder.status} />
                     </div>
                     <div className="scm-card-body">
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, marginBottom: 20 }}>
+                        {/* Responsive Metadata Grid */}
+                        <div className="scm-detail-grid">
                             <div>
                                 <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--color-text-faint)', marginBottom: 4 }}>Pelanggan</div>
                                 <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-text)' }}>{salesOrder.customer_name}</div>
@@ -59,48 +60,93 @@ export default function Show({ salesOrder }) {
                                 <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-text)' }}>{salesOrder.warehouse?.name ?? '—'}</div>
                             </div>
                             <div>
-                                <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--color-text-faint)', marginBottom: 4 }}>Total</div>
-                                <div style={{ fontSize: 18, fontWeight: 700, color: '#34D399', fontFamily: 'var(--font-heading)' }}>{fmt(salesOrder.total_amount ?? totalValue)}</div>
+                                <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--color-text-faint)', marginBottom: 4 }}>Tanggal</div>
+                                <div style={{ fontSize: 14, color: 'var(--color-text)' }}>{salesOrder.date}</div>
+                            </div>
+                            <div>
+                                <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--color-text-faint)', marginBottom: 4 }}>Total Nilai</div>
+                                <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-secondary)', fontFamily: 'var(--font-heading)' }}>{fmt(salesOrder.total_amount ?? totalValue)}</div>
                             </div>
                         </div>
 
-                        <div style={{ marginBottom: 16 }}>
-                            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--color-text-faint)', marginBottom: 4 }}>Tanggal</div>
-                            <div style={{ fontSize: 14, color: 'var(--color-text)' }}>{salesOrder.date}</div>
+                        {/* 1. Desktop Items Table */}
+                        <div className="scm-desktop-view">
+                            <div className="scm-table-responsive">
+                                <table className="scm-table">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Produk</th>
+                                            <th style={{ textAlign: 'center' }}>Qty</th>
+                                            <th style={{ textAlign: 'right' }}>Harga Satuan</th>
+                                            <th style={{ textAlign: 'right' }}>Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {(salesOrder.items ?? []).map((item, i) => {
+                                            const unitPrice = Number(item.price ?? item.unit_price ?? 0);
+                                            return (
+                                                <tr key={item.id}>
+                                                    <td style={{ color: 'var(--color-text-faint)', fontSize: 12 }}>{i + 1}</td>
+                                                    <td style={{ fontWeight: 500 }}>{item.product?.name ?? '—'}</td>
+                                                    <td style={{ textAlign: 'center' }}>{item.quantity} {item.product?.unit}</td>
+                                                    <td style={{ textAlign: 'right' }}>{fmt(unitPrice)}</td>
+                                                    <td style={{ textAlign: 'right', fontWeight: 600, fontFamily: 'var(--font-heading)' }}>{fmt(unitPrice * Number(item.quantity))}</td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colSpan="4" style={{ textAlign: 'right', fontWeight: 700, fontSize: 14, color: 'var(--color-text-muted)', padding: '12px 16px' }}>TOTAL</td>
+                                            <td style={{ textAlign: 'right', fontWeight: 700, fontSize: 16, fontFamily: 'var(--font-heading)', color: 'var(--color-secondary)', padding: '12px 16px' }}>{fmt(salesOrder.total_amount ?? totalValue)}</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
                         </div>
 
-                        <div className="scm-table-responsive">
-                            <table className="scm-table">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Produk</th>
-                                        <th style={{ textAlign: 'center' }}>Qty</th>
-                                        <th style={{ textAlign: 'right' }}>Harga Satuan</th>
-                                        <th style={{ textAlign: 'right' }}>Subtotal</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {(salesOrder.items ?? []).map((item, i) => {
-                                        const unitPrice = Number(item.price ?? item.unit_price ?? 0);
-                                        return (
-                                            <tr key={item.id}>
-                                                <td style={{ color: 'var(--color-text-faint)', fontSize: 12 }}>{i + 1}</td>
-                                                <td style={{ fontWeight: 500 }}>{item.product?.name ?? '—'}</td>
-                                                <td style={{ textAlign: 'center' }}>{item.quantity} {item.product?.unit}</td>
-                                                <td style={{ textAlign: 'right' }}>{fmt(unitPrice)}</td>
-                                                <td style={{ textAlign: 'right', fontWeight: 600, fontFamily: 'var(--font-heading)' }}>{fmt(unitPrice * Number(item.quantity))}</td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <td colSpan="4" style={{ textAlign: 'right', fontWeight: 700, fontSize: 14, color: 'var(--color-text-muted)', padding: '12px 16px' }}>TOTAL</td>
-                                        <td style={{ textAlign: 'right', fontWeight: 700, fontSize: 16, fontFamily: 'var(--font-heading)', color: '#34D399', padding: '12px 16px' }}>{fmt(salesOrder.total_amount ?? totalValue)}</td>
-                                    </tr>
-                                </tfoot>
-                            </table>
+                        {/* 2. Mobile Items Cards */}
+                        <div className="scm-mobile-view">
+                            <div className="scm-detail-items-mobile">
+                                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-faint)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>
+                                    Daftar Item ({salesOrder.items?.length ?? 0})
+                                </div>
+                                {(salesOrder.items ?? []).map((item, i) => {
+                                    const unitPrice = Number(item.price ?? item.unit_price ?? 0);
+                                    return (
+                                        <div key={item.id} className="scm-detail-item-card">
+                                            <div className="scm-detail-item-card-top">
+                                                <span className="scm-detail-item-card-name">
+                                                    {item.product?.name ?? '—'}
+                                                </span>
+                                                <span className="scm-detail-item-card-index">#{i + 1}</span>
+                                            </div>
+                                            <div className="scm-detail-item-card-calc">
+                                                <span className="scm-detail-item-card-qty">
+                                                    {item.quantity} {item.product?.unit ?? 'pcs'}
+                                                </span>
+                                                <span>@ {fmt(unitPrice)}</span>
+                                            </div>
+                                            <div className="scm-detail-item-card-subtotal-row">
+                                                <span style={{ fontSize: 12, color: 'var(--color-text-faint)' }}>Subtotal</span>
+                                                <span className="scm-detail-item-card-subtotal-val">
+                                                    {fmt(unitPrice * Number(item.quantity))}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+
+                                <div className="scm-detail-summary-card">
+                                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-muted)' }}>
+                                        Total Akhir
+                                    </span>
+                                    <span className="scm-detail-summary-total">
+                                        {fmt(salesOrder.total_amount ?? totalValue)}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

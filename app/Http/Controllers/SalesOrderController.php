@@ -15,7 +15,7 @@ class SalesOrderController extends Controller
 {
     public function index()
     {
-        $salesOrders = SalesOrder::with('creator')->latest()->get();
+        $salesOrders = SalesOrder::with(['creator', 'warehouse', 'items'])->latest()->get();
         $products = Product::orderBy('name')->get();
         $warehouses = Warehouse::orderBy('name')->get();
 
@@ -61,7 +61,7 @@ class SalesOrderController extends Controller
                 }
             }
 
-            if (!empty($validationErrors)) {
+            if (! empty($validationErrors)) {
                 throw ValidationException::withMessages($validationErrors);
             }
 

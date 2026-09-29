@@ -13,7 +13,7 @@ class PurchaseOrderController extends Controller
 {
     public function index()
     {
-        $purchaseOrders = PurchaseOrder::with('supplier', 'creator')->latest()->get();
+        $purchaseOrders = PurchaseOrder::with(['supplier', 'creator', 'items'])->latest()->get();
         $suppliers = Supplier::orderBy('name')->get();
         $products = Product::orderBy('name')->get();
 
