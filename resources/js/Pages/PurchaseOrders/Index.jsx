@@ -199,9 +199,14 @@ export default function Index({ purchaseOrders, suppliers, products }) {
                 <div className="scm-section-header">
                     <div>
                         <h1 className="scm-section-title">Purchase Orders</h1>
-                        <p style={{ fontSize: 13, color: 'var(--color-text-faint)', marginTop: 2 }}>
-                            {filteredPOs.length} dari {purchaseOrders.length} PO
-                        </p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+                            <span className="scm-stat-chip scm-stat-chip-green">
+                                <strong>{filteredPOs.length}</strong> PO Ditampilkan
+                            </span>
+                            <span className="scm-stat-chip scm-stat-chip-blue">
+                                <strong>{purchaseOrders.length}</strong> Total PO
+                            </span>
+                        </div>
                     </div>
                     <button onClick={() => setShowPanel(true)} className="scm-btn scm-btn-primary">
                         {icons.plus}
@@ -263,13 +268,13 @@ export default function Index({ purchaseOrders, suppliers, products }) {
                                     ) : filteredPOs.map((po) => (
                                         <tr key={po.id}>
                                             <td>
-                                                <Link href={route('purchase-orders.show', po.id)} style={{ color: 'var(--color-secondary)', fontWeight: 600, textDecoration: 'none', fontFamily: 'var(--font-heading)' }}>
+                                                <Link href={route('purchase-orders.show', po.id)} className="scm-sku-chip" style={{ textDecoration: 'none' }}>
                                                     PO-{String(po.id).padStart(4, '0')}
                                                 </Link>
                                             </td>
-                                            <td style={{ fontWeight: 500 }}>{po.supplier?.name ?? '—'}</td>
-                                            <td style={{ color: 'var(--color-text-muted)', fontSize: 12 }}>{po.date}</td>
-                                            <td style={{ textAlign: 'right', fontFamily: 'var(--font-heading)', fontWeight: 600 }}>{fmt(totalValue(po))}</td>
+                                            <td style={{ fontWeight: 600, color: 'var(--color-text)' }}>{po.supplier?.name ?? '—'}</td>
+                                            <td style={{ color: 'var(--color-text-muted)', fontSize: 12.5 }}>{po.date}</td>
+                                            <td style={{ textAlign: 'right', fontFamily: 'var(--font-heading)', fontWeight: 700, color: 'var(--color-primary)' }}>{fmt(totalValue(po))}</td>
                                             <td><StatusBadge status={po.status} /></td>
                                         </tr>
                                     ))}

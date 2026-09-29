@@ -56,10 +56,24 @@ export default function Index({ warehouses, stockMatrix }) {
                 <div className="scm-section-header">
                     <div>
                         <h1 className="scm-section-title">Stok per Gudang</h1>
-                        <p style={{ fontSize: 13, color: 'var(--color-text-faint)', marginTop: 2 }}>
-                            {stockMatrix.length} produk · {warehouses.length} gudang
-                            {lowCount > 0 && <span style={{ color: '#F87171', marginLeft: 8 }}>· {lowCount} produk menipis</span>}
-                        </p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+                            <span className="scm-stat-chip scm-stat-chip-green">
+                                <strong>{stockMatrix.length}</strong> Total Produk
+                            </span>
+                            <span className="scm-stat-chip scm-stat-chip-blue">
+                                <strong>{warehouses.length}</strong> Gudang Aktif
+                            </span>
+                            {lowCount > 0 ? (
+                                <span className="scm-stat-chip scm-stat-chip-red">
+                                    <span className="scm-pulse-dot" />
+                                    <strong>{lowCount}</strong> Produk Menipis
+                                </span>
+                            ) : (
+                                <span className="scm-stat-chip scm-stat-chip-green">
+                                    ✓ Semua Stok Aman
+                                </span>
+                            )}
+                        </div>
                     </div>
                 </div>
 
@@ -118,25 +132,40 @@ export default function Index({ warehouses, stockMatrix }) {
                                             <div className="scm-empty"><div className="scm-empty-title">Tidak ada produk sesuai filter</div></div>
                                         </td></tr>
                                     ) : filtered.map(product => (
-                                        <tr key={product.id} style={product.is_low_stock ? { background: 'rgba(239,68,68,0.05)' } : {}}>
-                                            <td style={{ fontFamily: 'monospace', fontSize: 11.5, color: 'var(--color-text-faint)' }}>{product.sku}</td>
-                                            <td style={{ fontWeight: 500 }}>
-                                                {product.name}
-                                                {product.category && <span style={{ fontSize: 11, color: 'var(--color-text-faint)', display: 'block' }}>{product.category}</span>}
+                                        <tr key={product.id} className={product.is_low_stock ? 'scm-row-warning' : ''}>
+                                            <td>
+                                                <span className="scm-sku-chip">{product.sku}</span>
+                                            </td>
+                                            <td>
+                                                <div style={{ fontWeight: 600, color: 'var(--color-text)' }}>{product.name}</div>
+                                                {product.category && <span className="scm-category-badge">{product.category}</span>}
                                             </td>
                                             {warehouses.map(w => {
                                                 const qty = product.warehouses?.[w.id] ?? 0;
                                                 return (
-                                                    <td key={w.id} style={{ textAlign: 'center', fontFamily: 'var(--font-heading)', fontWeight: 500, color: qty === 0 ? 'var(--color-text-faint)' : 'var(--color-text)' }}>
-                                                        {qty}
-                                                        <span style={{ fontSize: 10.5, fontFamily: 'var(--font-body)', fontWeight: 400, color: 'var(--color-text-faint)', marginLeft: 3 }}>{product.unit}</span>
+                                                    <td key={w.id} style={{ textAlign: 'center' }}>
+                                                        {qty > 0 ? (
+                                                            <span className="scm-qty-pill">
+                                                                {qty} <span className="scm-qty-unit">{product.unit}</span>
+                                                            </span>
+                                                        ) : (
+                                                            <span className="scm-qty-zero">
+                                                                0 <span className="scm-qty-unit">{product.unit}</span>
+                                                            </span>
+                                                        )}
                                                     </td>
                                                 );
                                             })}
-                                            <td style={{ textAlign: 'center', fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 15, color: product.is_low_stock ? '#F87171' : 'var(--color-text)' }}>
-                                                {product.total_stock}
+                                            <td style={{ textAlign: 'center' }}>
+                                                {product.is_low_stock ? (
+                                                    <span className="scm-total-low">{product.total_stock}</span>
+                                                ) : (
+                                                    <span className="scm-total-ok">{product.total_stock}</span>
+                                                )}
                                             </td>
-                                            <td style={{ textAlign: 'center', color: 'var(--color-text-faint)' }}>{product.min_stock}</td>
+                                            <td style={{ textAlign: 'center', color: 'var(--color-text-faint)', fontWeight: 500 }}>
+                                                {product.min_stock}
+                                            </td>
                                             <td style={{ textAlign: 'center' }}>
                                                 {product.is_low_stock
                                                     ? <span className="scm-badge scm-badge-red">⚠ Menipis</span>

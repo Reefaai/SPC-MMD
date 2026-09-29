@@ -4,40 +4,55 @@
 
 /* ─── Design System: SCM Enterprise Dark ─────────────────────── */
 :root {
-    --color-bg: #1A1C19;
+    --color-bg: #121512;
     /* Material Surface */
-    --color-surface: #212521;
+    --color-surface: #1B221C;
     /* Material Surface Container */
-    --color-surface-2: #2C322C;
+    --color-surface-2: #242E25;
     /* Material Surface Container High */
-    --color-surface-3: #384038;
+    --color-surface-3: #2F3B30;
     /* Material Surface Container Highest */
-    --color-border: #414941;
+    --color-surface-4: #3A493C;
     /* Material Outline Variant */
-    --color-border-2: #525C52;
+    --color-border: #3A473C;
     /* Material Outline */
+    --color-border-2: #4E6050;
 
+    /* Material 3 Primary Roles */
     --color-primary: #93D78C;
-    /* Material Primary (Green 80) */
     --color-primary-dim: #79BA74;
-    /* Darker primary */
     --color-primary-glow: rgba(147, 215, 140, 0.2);
+    --color-primary-container: rgba(147, 215, 140, 0.16);
+    --color-on-primary-container: #B8F2B0;
+
+    /* Material 3 Secondary Roles (Tonal companion green) */
     --color-secondary: #B8F2B0;
-    /* Material Primary 90 */
+    --color-secondary-container: rgba(184, 242, 176, 0.16);
+    --color-on-secondary-container: #B8F2B0;
+
+    /* Material 3 Tertiary Roles */
+    --color-tertiary: #FFD566;
+    --color-tertiary-container: rgba(255, 213, 102, 0.16);
+    --color-on-tertiary-container: #FFE599;
 
     --color-accent: #5FD475;
     --color-accent-dim: #45B85A;
 
     --color-text: #E1E3DF;
-    /* Material On-Surface */
     --color-text-muted: #C1C9C1;
-    /* Material On-Surface Variant */
     --color-text-faint: #8E968F;
 
     --color-danger: #FFB4AB;
-    /* Material Error 80 */
+    --color-danger-container: rgba(255, 180, 171, 0.18);
+    --color-on-danger-container: #FFDAD6;
+
     --color-warning: #FFB951;
-    --color-info: #A8C7FA;
+    --color-warning-container: rgba(255, 185, 81, 0.18);
+
+    --color-info: #92CCFF;
+    --color-info-container: rgba(146, 204, 255, 0.16);
+    --color-on-info-container: #CBE6FF;
+
     --color-success: #93D78C;
 
     --font-heading: 'Outfit', sans-serif;
@@ -123,8 +138,8 @@ h6 {
     left: 0;
     width: var(--sidebar-w);
     height: 100vh;
-    background: var(--color-surface);
-    border-right: 1px solid var(--color-border);
+    background: linear-gradient(180deg, #182019 0%, #121612 100%);
+    border-right: 1px solid rgba(147, 215, 140, 0.14);
     display: flex;
     flex-direction: column;
     z-index: 50;
@@ -146,7 +161,7 @@ h6 {
     align-items: center;
     gap: 10px;
     padding: 16px 20px;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid rgba(147, 215, 140, 0.12);
     height: var(--header-h);
     flex-shrink: 0;
 }
@@ -154,13 +169,13 @@ h6 {
 .scm-sidebar-logo-icon {
     width: 32px;
     height: 32px;
-    background: var(--color-primary);
+    background: linear-gradient(135deg, #93D78C 0%, #5EBC57 100%);
     border-radius: var(--radius);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    box-shadow: var(--shadow-primary);
+    box-shadow: 0 0 16px rgba(147, 215, 140, 0.35);
 }
 
 .scm-sidebar-logo-text {
@@ -176,9 +191,10 @@ h6 {
 
 .scm-sidebar-logo-sub {
     font-size: 10px;
-    color: var(--color-text-faint);
-    font-weight: 400;
-    letter-spacing: 0.05em;
+    color: var(--color-primary);
+    opacity: 0.85;
+    font-weight: 500;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     white-space: nowrap;
     opacity: 1;
@@ -197,19 +213,19 @@ h6 {
     padding: 12px 10px;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 3px;
 }
 
 .scm-nav-section-label {
     font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
+    font-weight: 700;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--color-text-faint);
-    padding: 10px 10px 4px;
+    color: var(--color-primary);
+    opacity: 0.9;
+    padding: 12px 10px 4px;
     margin-top: 6px;
     white-space: nowrap;
-    opacity: 1;
     transition: opacity var(--transition);
 }
 
@@ -352,9 +368,10 @@ h6 {
 
 /* ─── Card ─────────────────────────────────────────────────────── */
 .scm-card {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
+    background: linear-gradient(180deg, #202721 0%, #1A211C 100%);
+    border: 1px solid rgba(147, 215, 140, 0.16);
     border-radius: var(--radius-lg);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.04);
     overflow: hidden;
 }
 
@@ -364,14 +381,15 @@ h6 {
     justify-content: space-between;
     padding: 14px 20px;
     border-bottom: 1px solid var(--color-border);
-    background: rgba(0, 0, 0, 0.22);
+    background: rgba(0, 0, 0, 0.28);
 }
 
 .scm-card-title {
     font-family: var(--font-heading);
-    font-size: 13.5px;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 700;
     color: var(--color-text);
+    letter-spacing: -0.01em;
 }
 
 .scm-card-body {
@@ -380,51 +398,54 @@ h6 {
 
 /* ─── Metric Card ──────────────────────────────────────────────── */
 .scm-metric {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
+    background: linear-gradient(180deg, #212922 0%, #1B221C 100%);
+    border: 1px solid rgba(147, 215, 140, 0.16);
     border-radius: var(--radius-lg);
     padding: 18px 20px;
     display: flex;
     align-items: flex-start;
     gap: 14px;
-    transition: border-color var(--transition-md), box-shadow var(--transition-md);
+    transition: all var(--transition-md);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
 }
 
 .scm-metric:hover {
-    border-color: var(--color-surface-3);
-    box-shadow: var(--shadow);
+    border-color: rgba(147, 215, 140, 0.35);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 16px rgba(147, 215, 140, 0.12);
+    transform: translateY(-2px);
 }
 
 .scm-metric-icon {
-    width: 40px;
-    height: 40px;
+    width: 42px;
+    height: 42px;
     border-radius: var(--radius);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
 }
 
 .scm-metric-label {
     font-size: 11.5px;
-    font-weight: 500;
-    color: var(--color-text-faint);
+    font-weight: 600;
+    color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.07em;
     margin-bottom: 4px;
 }
 
 .scm-metric-value {
     font-family: var(--font-heading);
-    font-size: 24px;
+    font-size: 26px;
     font-weight: 700;
     color: var(--color-text);
     line-height: 1;
-    margin-bottom: 2px;
+    margin-bottom: 4px;
 }
 
 .scm-metric-sub {
-    font-size: 11px;
+    font-size: 11.5px;
     color: var(--color-text-faint);
 }
 
@@ -435,21 +456,21 @@ h6 {
 }
 
 .scm-table th {
-    padding: 10px 16px;
+    padding: 12px 16px;
     text-align: left;
-    font-size: 10.5px;
-    font-weight: 600;
-    letter-spacing: 0.07em;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--color-text-faint);
-    background: rgba(0, 0, 0, 0.22);
+    color: var(--color-primary);
+    background: rgba(0, 0, 0, 0.28);
     border-bottom: 1px solid var(--color-border);
     white-space: nowrap;
 }
 
 .scm-table td {
-    padding: 11px 16px;
-    font-size: 13px;
+    padding: 12px 16px;
+    font-size: 13.5px;
     color: var(--color-text);
     border-bottom: 1px solid var(--color-border);
 }
@@ -463,54 +484,199 @@ h6 {
 }
 
 .scm-table tbody tr:hover {
-    background: rgba(147, 215, 140, 0.05);
+    background: rgba(147, 215, 140, 0.08);
 }
 
-/* ─── Badge / Status ───────────────────────────────────────────── */
+/* Row warning for low stock */
+.scm-table tbody tr.scm-row-warning {
+    background: linear-gradient(90deg, rgba(255, 180, 171, 0.1) 0%, rgba(255, 180, 171, 0.02) 100%) !important;
+    border-left: 3px solid var(--color-danger);
+}
+
+.scm-table tbody tr.scm-row-warning:hover {
+    background: linear-gradient(90deg, rgba(255, 180, 171, 0.16) 0%, rgba(255, 180, 171, 0.05) 100%) !important;
+}
+
+/* ─── Material You Tonal Badges & Status Chips ────────────────── */
 .scm-badge {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 2px 8px;
+    gap: 5px;
+    padding: 3px 10px;
     border-radius: 100px;
-    font-size: 11px;
+    font-size: 11.5px;
     font-weight: 600;
+    letter-spacing: 0.01em;
     white-space: nowrap;
+    transition: all var(--transition);
 }
 
 .scm-badge-green {
-    background: rgba(147, 215, 140, 0.15);
-    color: #93D78C;
+    background: rgba(147, 215, 140, 0.18);
+    color: #B8F2B0;
+    border: 1px solid rgba(147, 215, 140, 0.4);
+    box-shadow: 0 0 10px rgba(147, 215, 140, 0.12);
 }
 
 .scm-badge-red {
-    background: rgba(255, 180, 171, 0.15);
+    background: rgba(255, 180, 171, 0.2);
     color: #FFB4AB;
+    border: 1px solid rgba(255, 180, 171, 0.45);
+    box-shadow: 0 0 10px rgba(255, 180, 171, 0.15);
 }
 
 .scm-badge-yellow {
-    background: rgba(255, 185, 81, 0.15);
-    color: #FFB951;
+    background: rgba(255, 185, 81, 0.2);
+    color: #FFD992;
+    border: 1px solid rgba(255, 185, 81, 0.45);
+    box-shadow: 0 0 10px rgba(255, 185, 81, 0.15);
 }
 
 .scm-badge-blue {
-    background: rgba(168, 199, 250, 0.15);
-    color: #A8C7FA;
+    background: rgba(146, 204, 255, 0.2);
+    color: #C2E7FF;
+    border: 1px solid rgba(146, 204, 255, 0.45);
+    box-shadow: 0 0 10px rgba(146, 204, 255, 0.15);
 }
 
 .scm-badge-purple {
-    background: rgba(184, 242, 176, 0.15);
-    color: #B8F2B0;
+    background: rgba(218, 178, 255, 0.2);
+    color: #E8D5FF;
+    border: 1px solid rgba(218, 178, 255, 0.45);
+    box-shadow: 0 0 10px rgba(218, 178, 255, 0.15);
 }
 
 .scm-badge-gray {
-    background: rgba(142, 150, 143, 0.15);
-    color: #C1C9C1;
+    background: rgba(142, 150, 143, 0.2);
+    color: #E1E3DF;
+    border: 1px solid rgba(142, 150, 143, 0.4);
 }
 
 .scm-badge-indigo {
-    background: rgba(147, 215, 140, 0.15);
-    color: #93D78C;
+    background: rgba(147, 215, 140, 0.18);
+    color: #B8F2B0;
+    border: 1px solid rgba(147, 215, 140, 0.4);
+}
+
+/* ─── Material You Chips & Stat Helpers ───────────────────────── */
+.scm-stat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: all var(--transition);
+}
+
+.scm-stat-chip strong {
+    font-weight: 700;
+}
+
+.scm-stat-chip-green {
+    background: rgba(147, 215, 140, 0.16);
+    color: #B8F2B0;
+    border: 1px solid rgba(147, 215, 140, 0.35);
+}
+
+.scm-stat-chip-blue {
+    background: rgba(146, 204, 255, 0.16);
+    color: #C2E7FF;
+    border: 1px solid rgba(146, 204, 255, 0.35);
+}
+
+.scm-stat-chip-red {
+    background: rgba(255, 180, 171, 0.18);
+    color: #FFB4AB;
+    border: 1px solid rgba(255, 180, 171, 0.4);
+    box-shadow: 0 0 12px rgba(255, 180, 171, 0.15);
+}
+
+.scm-stat-chip-yellow {
+    background: rgba(255, 185, 81, 0.18);
+    color: #FFD992;
+    border: 1px solid rgba(255, 185, 81, 0.35);
+}
+
+.scm-pulse-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--color-danger);
+    box-shadow: 0 0 6px var(--color-danger);
+    animation: pulseGlow 1.8s infinite;
+}
+
+@keyframes pulseGlow {
+    0% { transform: scale(0.9); opacity: 0.8; }
+    50% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(0.9); opacity: 0.8; }
+}
+
+.scm-sku-chip {
+    font-family: monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-secondary);
+    background: rgba(147, 215, 140, 0.12);
+    border: 1px solid rgba(147, 215, 140, 0.28);
+    padding: 2px 7px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+.scm-category-badge {
+    font-size: 11px;
+    color: var(--color-tertiary);
+    background: rgba(255, 213, 102, 0.12);
+    border: 1px solid rgba(255, 213, 102, 0.25);
+    padding: 1px 6px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-top: 3px;
+}
+
+.scm-qty-pill {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 3px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-family: var(--font-heading);
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.scm-qty-unit {
+    font-size: 10px;
+    font-family: var(--font-body);
+    font-weight: 400;
+    color: var(--color-text-faint);
+}
+
+.scm-qty-zero {
+    font-family: var(--font-heading);
+    color: var(--color-text-faint);
+    opacity: 0.45;
+}
+
+.scm-total-ok {
+    font-family: var(--font-heading);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--color-secondary);
+}
+
+.scm-total-low {
+    font-family: var(--font-heading);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--color-danger);
+    text-shadow: 0 0 10px rgba(255, 180, 171, 0.3);
 }
 
 /* ─── Buttons ──────────────────────────────────────────────────── */
@@ -536,14 +702,17 @@ h6 {
 }
 
 .scm-btn-primary {
-    background: var(--color-primary);
-    color: #fff;
-    border-color: var(--color-primary);
+    background: linear-gradient(135deg, #93D78C 0%, #6ABE63 100%);
+    color: #0B220B;
+    font-weight: 700;
+    border: 1px solid rgba(147, 215, 140, 0.4);
+    box-shadow: 0 2px 14px rgba(147, 215, 140, 0.35);
 }
 
 .scm-btn-primary:hover:not(:disabled) {
-    background: var(--color-primary-dim);
-    box-shadow: var(--shadow-primary);
+    background: linear-gradient(135deg, #A4E69D 0%, #79CD72 100%);
+    box-shadow: 0 4px 20px rgba(147, 215, 140, 0.5);
+    transform: translateY(-1px);
 }
 
 .scm-btn-secondary {
@@ -554,16 +723,18 @@ h6 {
 
 .scm-btn-secondary:hover:not(:disabled) {
     background: var(--color-surface-3);
+    border-color: rgba(147, 215, 140, 0.3);
 }
 
 .scm-btn-danger {
-    background: rgba(239, 68, 68, 0.15);
-    color: #F87171;
-    border-color: rgba(239, 68, 68, 0.3);
+    background: rgba(255, 180, 171, 0.16);
+    color: #FFB4AB;
+    border-color: rgba(255, 180, 171, 0.35);
 }
 
 .scm-btn-danger:hover:not(:disabled) {
-    background: rgba(239, 68, 68, 0.25);
+    background: rgba(255, 180, 171, 0.26);
+    box-shadow: 0 0 12px rgba(255, 180, 171, 0.2);
 }
 
 .scm-btn-ghost {

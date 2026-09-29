@@ -218,9 +218,14 @@ export default function Index({ salesOrders, products, warehouses }) {
                 <div className="scm-section-header">
                     <div>
                         <h1 className="scm-section-title">Sales Orders</h1>
-                        <p style={{ fontSize: 13, color: 'var(--color-text-faint)', marginTop: 2 }}>
-                            {filteredSOs.length} dari {salesOrders.length} SO
-                        </p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+                            <span className="scm-stat-chip scm-stat-chip-green">
+                                <strong>{filteredSOs.length}</strong> SO Ditampilkan
+                            </span>
+                            <span className="scm-stat-chip scm-stat-chip-blue">
+                                <strong>{salesOrders.length}</strong> Total SO
+                            </span>
+                        </div>
                     </div>
                     <button onClick={() => setShowPanel(true)} className="scm-btn scm-btn-primary">
                         {icons.plus}
@@ -289,14 +294,18 @@ export default function Index({ salesOrders, products, warehouses }) {
                                     ) : filteredSOs.map((so) => (
                                         <tr key={so.id}>
                                             <td>
-                                                <Link href={route('sales-orders.show', so.id)} style={{ color: 'var(--color-secondary)', fontWeight: 600, textDecoration: 'none', fontFamily: 'var(--font-heading)' }}>
+                                                <Link href={route('sales-orders.show', so.id)} className="scm-sku-chip" style={{ textDecoration: 'none' }}>
                                                     SO-{String(so.id).padStart(4, '0')}
                                                 </Link>
                                             </td>
-                                            <td style={{ fontWeight: 500 }}>{so.customer_name}</td>
-                                            <td style={{ color: 'var(--color-text-muted)', fontSize: 12 }}>{so.warehouse?.name ?? '—'}</td>
-                                            <td style={{ color: 'var(--color-text-muted)', fontSize: 12 }}>{so.date}</td>
-                                            <td style={{ textAlign: 'right', fontFamily: 'var(--font-heading)', fontWeight: 600 }}>{fmt(so.total_amount)}</td>
+                                            <td style={{ fontWeight: 600, color: 'var(--color-text)' }}>{so.customer_name}</td>
+                                            <td>
+                                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(255, 255, 255, 0.05)', padding: '2px 8px', borderRadius: 'var(--radius)', fontSize: 12 }}>
+                                                    {so.warehouse?.name ?? '—'}
+                                                </span>
+                                            </td>
+                                            <td style={{ color: 'var(--color-text-muted)', fontSize: 12.5 }}>{so.date}</td>
+                                            <td style={{ textAlign: 'right', fontFamily: 'var(--font-heading)', fontWeight: 700, color: 'var(--color-primary)' }}>{fmt(so.total_amount)}</td>
                                             <td><StatusBadge status={so.status} /></td>
                                         </tr>
                                     ))}
