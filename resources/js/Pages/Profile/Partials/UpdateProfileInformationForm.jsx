@@ -26,17 +26,17 @@ export default function UpdateProfileInformation({
 
     return (
         <section className={className}>
-            <header>
-                <h2 className="text-lg font-medium text-gray-900">
-                    Profile Information
+            <header style={{ marginBottom: 24 }}>
+                <h2 className="scm-card-title">
+                    Informasi Profil
                 </h2>
 
-                <p className="mt-1 text-sm text-gray-600">
-                    Update your account's profile information and email address.
+                <p className="scm-card-subtitle" style={{ marginTop: 4 }}>
+                    Perbarui informasi profil dan alamat email akun Anda.
                 </p>
             </header>
 
-            <form onSubmit={submit} className="mt-6 space-y-6">
+            <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 <div>
                     <InputLabel htmlFor="name" value="Name" />
 
@@ -102,8 +102,8 @@ export default function UpdateProfileInformation({
                         leave="transition ease-in-out"
                         leaveTo="opacity-0"
                     >
-                        <p className="text-sm text-gray-600">
-                            Saved.
+                        <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                            Tersimpan.
                         </p>
                     </Transition>
                 </div>

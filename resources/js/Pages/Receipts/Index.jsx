@@ -3,8 +3,9 @@ import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function Index({ receipts, pendingPOs, warehouses }) {
-    const [showForm, setShowForm] = useState(false);
-    const [selectedPO, setSelectedPO] = useState(null);
+    const [showPanel, setShowPanel]     = useState(false);
+    const [selectedPO, setSelectedPO]   = useState(null);
+
     const { data, setData, post, processing, reset } = useForm({
         purchase_order_id: '',
         warehouse_id: '',
@@ -39,139 +40,144 @@ export default function Index({ receipts, pendingPOs, warehouses }) {
             onSuccess: () => {
                 reset();
                 setSelectedPO(null);
-                setShowForm(false);
+                setShowPanel(false);
             },
         });
     };
 
     return (
-        <AuthenticatedLayout
-            header={
-                <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-semibold leading-tight text-gray-800">Penerimaan Barang (Receipts)</h2>
-                    <button
-                        onClick={() => setShowForm(!showForm)}
-                        className="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-                    >
-                        {showForm ? 'Batal' : '+ Buat Penerimaan'}
-                    </button>
-                </div>
-            }
-        >
+        <AuthenticatedLayout header="Penerimaan Barang">
             <Head title="Receipts" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-6">
-
-                    {showForm && (
-                        <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                            <div className="p-6">
-                                <h3 className="text-lg font-medium text-gray-900 mb-4">Buat Penerimaan Barang</h3>
-                                <form onSubmit={submit} className="space-y-4">
-                                    <div className="grid grid-cols-3 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">Purchase Order</label>
-                                            <select
-                                                value={data.purchase_order_id}
-                                                onChange={e => handleSelectPO(e.target.value)}
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
-                                                required
-                                            >
-                                                <option value="">-- Pilih PO --</option>
-                                                {pendingPOs.map(po => (
-                                                    <option key={po.id} value={po.id}>PO-{String(po.id).padStart(4, '0')} — {po.supplier?.name}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">Gudang Tujuan</label>
-                                            <select
-                                                value={data.warehouse_id}
-                                                onChange={e => setData('warehouse_id', e.target.value)}
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
-                                                required
-                                            >
-                                                <option value="">-- Pilih Gudang --</option>
-                                                {warehouses.map(w => (
-                                                    <option key={w.id} value={w.id}>{w.name}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">Tanggal Terima</label>
-                                            <input
-                                                type="date"
-                                                value={data.date}
-                                                onChange={e => setData('date', e.target.value)}
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
-                                                required
-                                            />
-                                        </div>
+            {/* Slide-in Panel */}
+            {showPanel && (
+                <>
+                    <div className="scm-panel-overlay" onClick={() => setShowPanel(false)} />
+                    <div className="scm-panel">
+                        <div className="scm-panel-header">
+                            <span className="scm-panel-title">Buat Penerimaan Barang</span>
+                            <button onClick={() => setShowPanel(false)} className="scm-btn scm-btn-ghost scm-btn-sm">✕</button>
+                        </div>
+                        <div className="scm-panel-body">
+                            <form id="receipt-form" onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <div>
+                                    <label className="scm-label">Purchase Order</label>
+                                    <select value={data.purchase_order_id} onChange={e => handleSelectPO(e.target.value)} className="scm-select" required>
+                                        <option value="">-- Pilih PO --</option>
+                                        {pendingPOs.map(po => (
+                                            <option key={po.id} value={po.id}>PO-{String(po.id).padStart(4, '0')} — {po.supplier?.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                                    <div>
+                                        <label className="scm-label">Gudang Tujuan</label>
+                                        <select value={data.warehouse_id} onChange={e => setData('warehouse_id', e.target.value)} className="scm-select" required>
+                                            <option value="">-- Pilih --</option>
+                                            {warehouses.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
+                                        </select>
                                     </div>
+                                    <div>
+                                        <label className="scm-label">Tanggal Terima</label>
+                                        <input type="date" value={data.date} onChange={e => setData('date', e.target.value)} className="scm-input" required />
+                                    </div>
+                                </div>
 
-                                    {data.items.length > 0 && (
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Konfirmasi Jumlah Diterima</label>
+                                {/* Items */}
+                                {data.items.length > 0 && (
+                                    <div>
+                                        <label className="scm-label" style={{ marginBottom: 10 }}>Konfirmasi Jumlah Diterima</label>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                                             {data.items.map((item, index) => (
-                                                <div key={index} className="flex gap-3 mb-2 items-center">
-                                                    <span className="flex-1 text-sm text-gray-700">{item.product_name}</span>
+                                                <div key={index} style={{
+                                                    display: 'flex', alignItems: 'center', gap: 10,
+                                                    background: 'var(--color-surface-2)',
+                                                    border: '1px solid var(--color-border-2)',
+                                                    borderRadius: 'var(--radius)',
+                                                    padding: '10px 12px',
+                                                }}>
+                                                    <div style={{ flex: 1 }}>
+                                                        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text)' }}>{item.product_name}</div>
+                                                    </div>
                                                     <input
-                                                        type="number"
-                                                        min="1"
+                                                        type="number" min="1"
                                                         value={item.quantity_received}
                                                         onChange={e => updateQty(index, e.target.value)}
-                                                        className="w-24 rounded-md border-gray-300 shadow-sm sm:text-sm"
+                                                        className="scm-input"
+                                                        style={{ width: 80 }}
                                                         required
                                                     />
+                                                    <span style={{ fontSize: 12, color: 'var(--color-text-faint)', whiteSpace: 'nowrap' }}>unit</span>
                                                 </div>
                                             ))}
                                         </div>
-                                    )}
+                                    </div>
+                                )}
 
-                                    <button
-                                        type="submit"
-                                        disabled={processing || data.items.length === 0}
-                                        className="inline-flex items-center rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
-                                    >
-                                        {processing ? 'Menyimpan...' : 'Konfirmasi Penerimaan'}
-                                    </button>
-                                </form>
-                            </div>
+                                {pendingPOs.length === 0 && (
+                                    <div className="scm-alert scm-alert-warning">
+                                        Tidak ada PO yang menunggu penerimaan.
+                                    </div>
+                                )}
+                            </form>
                         </div>
-                    )}
+                        <div className="scm-panel-footer">
+                            <button type="button" onClick={() => setShowPanel(false)} className="scm-btn scm-btn-secondary">Batal</button>
+                            <button type="submit" form="receipt-form" disabled={processing || data.items.length === 0} className="scm-btn scm-btn-primary" style={{ background: 'var(--color-accent)' }}>
+                                {processing ? 'Menyimpan...' : 'Konfirmasi Penerimaan'}
+                            </button>
+                        </div>
+                    </div>
+                </>
+            )}
 
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                        <div className="p-6">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Receipt</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Purchase Order</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gudang</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <div className="scm-section-header">
+                    <div>
+                        <h1 className="scm-section-title">Penerimaan Barang</h1>
+                        <p style={{ fontSize: 13, color: 'var(--color-text-faint)', marginTop: 2 }}>{receipts.length} total penerimaan</p>
+                    </div>
+                    <button onClick={() => setShowPanel(true)} disabled={pendingPOs.length === 0} className="scm-btn scm-btn-primary" style={{ background: 'var(--color-accent)' }}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 15, height: 15 }}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Buat Penerimaan
+                    </button>
+                </div>
+
+                <div className="scm-card">
+                    <div className="scm-table-responsive">
+                        <table className="scm-table">
+                            <thead>
+                                <tr>
+                                    <th>No. Receipt</th>
+                                    <th>Purchase Order</th>
+                                    <th>Gudang</th>
+                                    <th>Tanggal</th>
+                                    <th>Diterima Oleh</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {receipts.length === 0 ? (
+                                    <tr><td colSpan="6">
+                                        <div className="scm-empty">
+                                            <div className="scm-empty-title">{hasFilter ? 'Tidak ada penerimaan sesuai filter' : 'Belum ada penerimaan barang'}</div>
+                                            <div className="scm-empty-desc">Konfirmasi penerimaan barang dari PO yang sudah disetujui</div>
+                                        </div>
+                                    </td></tr>
+                                ) : receipts.map((r) => (
+                                    <tr key={r.id}>
+                                        <td style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, color: 'var(--color-secondary)' }}>
+                                            RCP-{String(r.id).padStart(4, '0')}
+                                        </td>
+                                        <td style={{ color: 'var(--color-text-muted)' }}>PO-{String(r.purchase_order_id).padStart(4, '0')}</td>
+                                        <td style={{ fontWeight: 500 }}>{r.warehouse?.name ?? '—'}</td>
+                                        <td style={{ color: 'var(--color-text-muted)', fontSize: 12 }}>{r.date}</td>
+                                        <td style={{ color: 'var(--color-text-muted)', fontSize: 12 }}>{r.receiver?.name ?? '—'}</td>
+                                        <td><span className="scm-badge scm-badge-green">{r.status}</span></td>
                                     </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {receipts.map((r) => (
-                                        <tr key={r.id}>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">RCP-{String(r.id).padStart(4, '0')}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">PO-{String(r.purchase_order_id).padStart(4, '0')}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{r.warehouse?.name ?? '-'}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{r.date}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{r.status}</span>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    {receipts.length === 0 && (
-                                        <tr>
-                                            <td colSpan="5" className="px-6 py-10 text-center text-sm text-gray-400">Belum ada penerimaan barang.</td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

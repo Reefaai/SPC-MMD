@@ -2,251 +2,203 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
-export default function Index({ purchaseOrders, suppliers, products }) {
-    const [showForm, setShowForm] = useState(false);
+function StatusBadge({ status }) {
+    const map = {
+        Pending:   'scm-badge scm-badge-yellow',
+        Approved:  'scm-badge scm-badge-blue',
+        Completed: 'scm-badge scm-badge-green',
+        Cancelled: 'scm-badge scm-badge-red',
+    };
+    return <span className={map[status] ?? 'scm-badge scm-badge-gray'}>{status}</span>;
+}
 
-    // Filter state
-    const [filterStatus, setFilterStatus] = useState('');
+export default function Index({ purchaseOrders, suppliers, products }) {
+    const [showPanel, setShowPanel] = useState(false);
+    const [filterStatus, setFilterStatus]     = useState('');
     const [filterSupplier, setFilterSupplier] = useState('');
     const [filterDateFrom, setFilterDateFrom] = useState('');
-    const [filterDateTo, setFilterDateTo] = useState('');
+    const [filterDateTo, setFilterDateTo]     = useState('');
 
     const filteredPOs = purchaseOrders.filter((po) => {
-        if (filterStatus && po.status !== filterStatus) return false;
+        if (filterStatus   && po.status !== filterStatus) return false;
         if (filterSupplier && !(po.supplier?.name ?? '').toLowerCase().includes(filterSupplier.toLowerCase())) return false;
         if (filterDateFrom && po.date < filterDateFrom) return false;
-        if (filterDateTo && po.date > filterDateTo) return false;
+        if (filterDateTo   && po.date > filterDateTo)   return false;
         return true;
     });
 
-    const resetFilters = () => {
-        setFilterStatus('');
-        setFilterSupplier('');
-        setFilterDateFrom('');
-        setFilterDateTo('');
-    };
-
+    const resetFilters = () => { setFilterStatus(''); setFilterSupplier(''); setFilterDateFrom(''); setFilterDateTo(''); };
     const hasFilter = filterStatus || filterSupplier || filterDateFrom || filterDateTo;
+
     const { data, setData, post, processing, errors, reset } = useForm({
         supplier_id: '',
         date: new Date().toISOString().split('T')[0],
         items: [{ product_id: '', quantity: 1 }],
     });
 
-    const addItem = () => setData('items', [...data.items, { product_id: '', quantity: 1 }]);
-    const removeItem = (index) => setData('items', data.items.filter((_, i) => i !== index));
-
-    const updateItem = (index, field, value) => {
-        const updated = [...data.items];
-        updated[index][field] = value;
-        setData('items', updated);
+    const addItem    = () => setData('items', [...data.items, { product_id: '', quantity: 1 }]);
+    const removeItem = (i) => setData('items', data.items.filter((_, idx) => idx !== i));
+    const updateItem = (i, field, value) => {
+        const u = [...data.items]; u[i][field] = value; setData('items', u);
     };
 
     const submit = (e) => {
         e.preventDefault();
         post(route('purchase-orders.store'), {
-            onSuccess: () => {
-                reset();
-                setShowForm(false);
-            },
+            onSuccess: () => { reset(); setShowPanel(false); },
         });
     };
 
-    const getStatusBadge = (status) => {
-        const colors = {
-            Pending: 'bg-yellow-100 text-yellow-800',
-            Approved: 'bg-blue-100 text-blue-800',
-            Completed: 'bg-green-100 text-green-800',
-            Cancelled: 'bg-red-100 text-red-800',
-            Draft: 'bg-gray-100 text-gray-800',
-        };
-        return `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colors[status] || 'bg-gray-100 text-gray-800'}`;
-    };
+    const totalValue = (po) => (po.items ?? []).reduce((s, it) => s + (Number(it.price ?? 0) * Number(it.quantity ?? 0)), 0);
+    const fmt = (v) => `Rp ${Number(v).toLocaleString('id-ID')}`;
 
     return (
-        <AuthenticatedLayout
-            header={
-                <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                        Purchase Orders
-                    </h2>
-                    <button
-                        onClick={() => setShowForm(!showForm)}
-                        className="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-                    >
-                        {showForm ? 'Cancel' : '+ New Purchase Order'}
-                    </button>
-                </div>
-            }
-        >
+        <AuthenticatedLayout header="Purchase Orders">
             <Head title="Purchase Orders" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-6">
+            {/* Slide-in Panel */}
+            {showPanel && (
+                <>
+                    <div className="scm-panel-overlay" onClick={() => setShowPanel(false)} />
+                    <div className="scm-panel">
+                        <div className="scm-panel-header">
+                            <span className="scm-panel-title">Buat Purchase Order Baru</span>
+                            <button onClick={() => setShowPanel(false)} className="scm-btn scm-btn-ghost scm-btn-sm">✕</button>
+                        </div>
+                        <div className="scm-panel-body">
+                            <form id="po-form" onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <div>
+                                    <label className="scm-label">Supplier</label>
+                                    <select value={data.supplier_id} onChange={e => setData('supplier_id', e.target.value)} className="scm-select" required>
+                                        <option value="">-- Pilih Supplier --</option>
+                                        {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                    </select>
+                                    {errors.supplier_id && <p className="scm-form-error">{errors.supplier_id}</p>}
+                                </div>
+                                <div>
+                                    <label className="scm-label">Tanggal PO</label>
+                                    <input type="date" value={data.date} onChange={e => setData('date', e.target.value)} className="scm-input" required />
+                                    {errors.date && <p className="scm-form-error">{errors.date}</p>}
+                                </div>
 
-                    {/* Create Form */}
-                    {showForm && (
-                        <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                            <div className="p-6">
-                                <h3 className="text-lg font-medium text-gray-900 mb-4">Create Purchase Order</h3>
-                                <form onSubmit={submit} className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">Supplier</label>
-                                            <select
-                                                value={data.supplier_id}
-                                                onChange={e => setData('supplier_id', e.target.value)}
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                                required
-                                            >
-                                                <option value="">-- Pilih Supplier --</option>
-                                                {suppliers.map(s => (
-                                                    <option key={s.id} value={s.id}>{s.name}</option>
-                                                ))}
-                                            </select>
-                                            {errors.supplier_id && <p className="text-red-500 text-xs mt-1">{errors.supplier_id}</p>}
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">Tanggal</label>
-                                            <input
-                                                type="date"
-                                                value={data.date}
-                                                onChange={e => setData('date', e.target.value)}
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                                required
-                                            />
-                                        </div>
+                                {/* Items */}
+                                <div>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                                        <label className="scm-label" style={{ margin: 0 }}>Item Produk</label>
+                                        <button type="button" onClick={addItem} className="scm-btn scm-btn-ghost scm-btn-sm" style={{ color: 'var(--color-secondary)' }}>
+                                            + Tambah Item
+                                        </button>
                                     </div>
-
-                                    {/* Items */}
-                                    <div>
-                                        <div className="flex items-center justify-between mb-2">
-                                            <label className="block text-sm font-medium text-gray-700">Item Produk</label>
-                                            <button type="button" onClick={addItem} className="text-sm text-indigo-600 hover:text-indigo-900">+ Tambah Item</button>
-                                        </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                                         {data.items.map((item, index) => (
-                                            <div key={index} className="flex gap-3 mb-2 items-center">
-                                                <select
-                                                    value={item.product_id}
-                                                    onChange={e => updateItem(index, 'product_id', e.target.value)}
-                                                    className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                                    required
-                                                >
-                                                    <option value="">-- Pilih Produk --</option>
-                                                    {products.map(p => (
-                                                        <option key={p.id} value={p.id}>{p.name} (Rp {Number(p.price).toLocaleString('id-ID')})</option>
-                                                    ))}
-                                                </select>
-                                                <input
-                                                    type="number"
-                                                    min="1"
-                                                    value={item.quantity}
-                                                    onChange={e => updateItem(index, 'quantity', e.target.value)}
-                                                    className="w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                                    placeholder="Qty"
-                                                    required
-                                                />
+                                            <div key={index} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                                                <div style={{ flex: 1 }}>
+                                                    <select value={item.product_id} onChange={e => updateItem(index, 'product_id', e.target.value)} className="scm-select" required>
+                                                        <option value="">-- Produk --</option>
+                                                        {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                                                    </select>
+                                                </div>
+                                                <div style={{ width: 80 }}>
+                                                    <input type="number" min="1" value={item.quantity} onChange={e => updateItem(index, 'quantity', e.target.value)} className="scm-input" placeholder="Qty" required />
+                                                </div>
                                                 {data.items.length > 1 && (
-                                                    <button type="button" onClick={() => removeItem(index)} className="text-red-500 hover:text-red-700">✕</button>
+                                                    <button type="button" onClick={() => removeItem(index)} className="scm-btn scm-btn-danger scm-btn-sm" style={{ marginTop: 0, flexShrink: 0 }}>✕</button>
                                                 )}
                                             </div>
                                         ))}
                                     </div>
-
-                                    <button
-                                        type="submit"
-                                        disabled={processing}
-                                        className="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-                                    >
-                                        {processing ? 'Menyimpan...' : 'Simpan Purchase Order'}
-                                    </button>
-                                </form>
-                            </div>
+                                </div>
+                            </form>
                         </div>
-                    )}
-
-                    {/* Filter Bar */}
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                        <div className="p-4 border-b border-gray-200">
-                            <div className="flex flex-wrap gap-3 items-end">
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">Cari Supplier</label>
-                                    <input
-                                        type="text"
-                                        value={filterSupplier}
-                                        onChange={e => setFilterSupplier(e.target.value)}
-                                        placeholder="Nama supplier..."
-                                        className="rounded-md border-gray-300 shadow-sm text-sm"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">Status</label>
-                                    <select
-                                        value={filterStatus}
-                                        onChange={e => setFilterStatus(e.target.value)}
-                                        className="rounded-md border-gray-300 shadow-sm text-sm"
-                                    >
-                                        <option value="">Semua Status</option>
-                                        {['Draft','Pending','Approved','Completed','Cancelled'].map(s => (
-                                            <option key={s} value={s}>{s}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">Dari Tanggal</label>
-                                    <input type="date" value={filterDateFrom} onChange={e => setFilterDateFrom(e.target.value)}
-                                        className="rounded-md border-gray-300 shadow-sm text-sm" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">Sampai Tanggal</label>
-                                    <input type="date" value={filterDateTo} onChange={e => setFilterDateTo(e.target.value)}
-                                        className="rounded-md border-gray-300 shadow-sm text-sm" />
-                                </div>
-                                {hasFilter && (
-                                    <button onClick={resetFilters} className="text-sm text-red-500 hover:text-red-700 underline pb-1">
-                                        Reset Filter
-                                    </button>
-                                )}
-                                <span className="text-xs text-gray-400 pb-1 ml-auto">
-                                    {filteredPOs.length} dari {purchaseOrders.length} PO
-                                </span>
-                            </div>
+                        <div className="scm-panel-footer">
+                            <button type="button" onClick={() => setShowPanel(false)} className="scm-btn scm-btn-secondary">Batal</button>
+                            <button type="submit" form="po-form" disabled={processing} className="scm-btn scm-btn-primary">
+                                {processing ? 'Menyimpan...' : 'Simpan PO'}
+                            </button>
                         </div>
-                        <div className="p-6">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. PO</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    </div>
+                </>
+            )}
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                {/* Header */}
+                <div className="scm-section-header">
+                    <div>
+                        <h1 className="scm-section-title">Purchase Orders</h1>
+                        <p style={{ fontSize: 13, color: 'var(--color-text-faint)', marginTop: 2 }}>
+                            {filteredPOs.length} dari {purchaseOrders.length} PO
+                        </p>
+                    </div>
+                    <button onClick={() => setShowPanel(true)} className="scm-btn scm-btn-primary">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 15, height: 15 }}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Buat PO Baru
+                    </button>
+                </div>
+
+                {/* Filters */}
+                <div className="scm-card">
+                    <div className="scm-filter-bar">
+                        <div>
+                            <label className="scm-label">Status</label>
+                            <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="scm-select" style={{ width: 140 }}>
+                                <option value="">Semua</option>
+                                {['Pending','Approved','Completed','Cancelled'].map(s => <option key={s} value={s}>{s}</option>)}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="scm-label">Supplier</label>
+                            <input type="text" value={filterSupplier} onChange={e => setFilterSupplier(e.target.value)} placeholder="Nama supplier..." className="scm-input" style={{ width: 180 }} />
+                        </div>
+                        <div>
+                            <label className="scm-label">Dari</label>
+                            <input type="date" value={filterDateFrom} onChange={e => setFilterDateFrom(e.target.value)} className="scm-input" style={{ width: 150 }} />
+                        </div>
+                        <div>
+                            <label className="scm-label">Sampai</label>
+                            <input type="date" value={filterDateTo} onChange={e => setFilterDateTo(e.target.value)} className="scm-input" style={{ width: 150 }} />
+                        </div>
+                        {hasFilter && (
+                            <div style={{ alignSelf: 'flex-end' }}>
+                                <button onClick={resetFilters} className="scm-btn scm-btn-ghost scm-btn-sm" style={{ color: '#F87171' }}>✕ Reset</button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Table */}
+                    <div className="scm-table-responsive">
+                        <table className="scm-table">
+                            <thead>
+                                <tr>
+                                    <th>No. PO</th>
+                                    <th>Supplier</th>
+                                    <th>Tanggal</th>
+                                    <th style={{ textAlign: 'right' }}>Nilai</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredPOs.length === 0 ? (
+                                    <tr><td colSpan="5">
+                                        <div className="scm-empty">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ width: 40, height: 40 }}><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+                                            <div className="scm-empty-title">{hasFilter ? 'Tidak ada PO sesuai filter' : 'Belum ada Purchase Order'}</div>
+                                        </div>
+                                    </td></tr>
+                                ) : filteredPOs.map((po) => (
+                                    <tr key={po.id}>
+                                        <td>
+                                            <Link href={route('purchase-orders.show', po.id)} style={{ color: 'var(--color-secondary)', fontWeight: 600, textDecoration: 'none', fontFamily: 'var(--font-heading)' }}>
+                                                PO-{String(po.id).padStart(4, '0')}
+                                            </Link>
+                                        </td>
+                                        <td style={{ fontWeight: 500 }}>{po.supplier?.name ?? '—'}</td>
+                                        <td style={{ color: 'var(--color-text-muted)', fontSize: 12 }}>{po.date}</td>
+                                        <td style={{ textAlign: 'right', fontFamily: 'var(--font-heading)', fontWeight: 600 }}>{fmt(totalValue(po))}</td>
+                                        <td><StatusBadge status={po.status} /></td>
                                     </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {filteredPOs.map((po) => (
-                                        <tr key={po.id} className="hover:bg-gray-50">
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600 hover:underline">
-                                                <Link href={route('purchase-orders.show', po.id)}>PO-{String(po.id).padStart(4, '0')}</Link>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{po.supplier?.name ?? '-'}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{po.date}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Rp {Number(po.total_amount).toLocaleString('id-ID')}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className={getStatusBadge(po.status)}>{po.status}</span>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    {filteredPOs.length === 0 && (
-                                        <tr>
-                                            <td colSpan="5" className="px-6 py-10 text-center text-sm text-gray-400">
-                                                {hasFilter ? 'Tidak ada PO yang sesuai filter.' : 'Belum ada Purchase Order.'}
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

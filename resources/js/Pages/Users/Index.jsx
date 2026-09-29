@@ -2,156 +2,196 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
-const ROLE_COLORS = {
-    Admin: 'bg-purple-100 text-purple-700',
-    Procurement: 'bg-blue-100 text-blue-700',
-    Gudang: 'bg-green-100 text-green-700',
-    Sales: 'bg-yellow-100 text-yellow-700',
+const ROLE_BADGE = {
+    Admin:       'scm-badge scm-badge-purple',
+    Procurement: 'scm-badge scm-badge-blue',
+    Gudang:      'scm-badge scm-badge-green',
+    Sales:       'scm-badge scm-badge-yellow',
 };
 
-function Modal({ title, onClose, children }) {
+function UserPanel({ title, onClose, children }) {
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-                <div className="flex items-center justify-between px-6 py-4 border-b">
-                    <h3 className="text-base font-semibold text-gray-900">{title}</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+        <>
+            <div className="scm-panel-overlay" onClick={onClose} />
+            <div className="scm-panel">
+                <div className="scm-panel-header">
+                    <span className="scm-panel-title">{title}</span>
+                    <button onClick={onClose} className="scm-btn scm-btn-ghost scm-btn-sm">✕</button>
                 </div>
-                <div className="px-6 py-4">{children}</div>
+                {children}
             </div>
-        </div>
-    );
-}
-
-function UserForm({ form, roles, onSubmit, isEdit = false }) {
-    return (
-        <form onSubmit={onSubmit} className="space-y-4">
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nama</label>
-                <input type="text" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)}
-                    className="block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" />
-                {form.errors.name && <p className="text-xs text-red-500 mt-1">{form.errors.name}</p>}
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input type="email" value={form.data.email} onChange={(e) => form.setData('email', e.target.value)}
-                    className="block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" />
-                {form.errors.email && <p className="text-xs text-red-500 mt-1">{form.errors.email}</p>}
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Password {isEdit && <span className="text-gray-400 font-normal">(kosongkan jika tidak diubah)</span>}
-                </label>
-                <input type="password" value={form.data.password} onChange={(e) => form.setData('password', e.target.value)}
-                    className="block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
-                    placeholder={isEdit ? '••••••••' : ''} />
-                {form.errors.password && <p className="text-xs text-red-500 mt-1">{form.errors.password}</p>}
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                <select value={form.data.role_id} onChange={(e) => form.setData('role_id', e.target.value)}
-                    className="block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
-                    <option value="">— Pilih Role —</option>
-                    {roles.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
-                </select>
-                {form.errors.role_id && <p className="text-xs text-red-500 mt-1">{form.errors.role_id}</p>}
-            </div>
-            <div className="flex justify-end gap-3 pt-2">
-                <button type="submit" disabled={form.processing}
-                    className="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
-                    {form.processing ? 'Menyimpan...' : isEdit ? 'Perbarui' : 'Tambah User'}
-                </button>
-            </div>
-        </form>
+        </>
     );
 }
 
 export default function Index({ users, roles }) {
     const { auth } = usePage().props;
-    const [showCreate, setShowCreate] = useState(false);
-    const [editUser, setEditUser] = useState(null);
+    const currentUserId = auth.user.id;
 
-    const createForm = useForm({ name: '', email: '', password: '', role_id: '' });
-    const editForm = useForm({ name: '', email: '', password: '', role_id: '' });
+    const [createOpen, setCreateOpen] = useState(false);
+    const [editingUser, setEditingUser] = useState(null);
 
-    const handleCreate = (e) => {
+    const createForm = useForm({ name: '', email: '', password: '', password_confirmation: '', role_id: '' });
+    const editForm   = useForm({ name: '', email: '', role_id: '' });
+    const passForm   = useForm({ password: '', password_confirmation: '' });
+    const [showPassFor, setShowPassFor] = useState(null);
+
+    const submitCreate = (e) => {
         e.preventDefault();
         createForm.post(route('users.store'), {
-            onSuccess: () => { setShowCreate(false); createForm.reset(); },
+            onSuccess: () => { createForm.reset(); setCreateOpen(false); },
         });
     };
 
     const openEdit = (user) => {
-        setEditUser(user);
-        editForm.setData({ name: user.name, email: user.email, password: '', role_id: String(user.role_id ?? '') });
+        setEditingUser(user);
+        editForm.setData({ name: user.name, email: user.email, role_id: user.role?.id ?? '' });
     };
 
-    const handleEdit = (e) => {
+    const submitEdit = (e) => {
         e.preventDefault();
-        editForm.put(route('users.update', editUser.id), {
-            onSuccess: () => { setEditUser(null); editForm.reset(); },
+        editForm.put(route('users.update', editingUser.id), {
+            onSuccess: () => { editForm.reset(); setEditingUser(null); },
         });
     };
 
-    const handleDelete = (user) => {
-        if (confirm(`Hapus user "${user.name}"? Aksi ini tidak dapat dibatalkan.`)) {
-            editForm.delete(route('users.destroy', user.id));
-        }
+    const submitPassword = (e) => {
+        e.preventDefault();
+        passForm.put(route('users.update', showPassFor), {
+            onSuccess: () => { passForm.reset(); setShowPassFor(null); },
+        });
+    };
+
+    const deleteUser = (id) => {
+        if (confirm('Hapus user ini?')) useForm().delete(route('users.destroy', id));
     };
 
     return (
-        <AuthenticatedLayout header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Manajemen User</h2>}>
-            <Head title="Manajemen User" />
-            <div className="py-8">
-                <div className="mx-auto max-w-5xl sm:px-6 lg:px-8">
-                    <div className="bg-white shadow-sm sm:rounded-lg">
-                        <div className="px-6 py-4 border-b flex items-center justify-between">
-                            <p className="text-sm text-gray-500">{users.length} user terdaftar</p>
-                            <button onClick={() => setShowCreate(true)}
-                                className="inline-flex items-center gap-2 rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700">
-                                + Tambah User
-                            </button>
-                        </div>
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
+        <AuthenticatedLayout header="Manajemen User">
+            <Head title="Users" />
+
+            {/* Create Panel */}
+            {createOpen && (
+                <UserPanel title="Tambah User Baru" onClose={() => setCreateOpen(false)}>
+                    <div className="scm-panel-body">
+                        <form id="create-user-form" onSubmit={submitCreate} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                            <div>
+                                <label className="scm-label">Nama Lengkap</label>
+                                <input type="text" value={createForm.data.name} onChange={e => createForm.setData('name', e.target.value)} className="scm-input" required />
+                                {createForm.errors.name && <p className="scm-form-error">{createForm.errors.name}</p>}
+                            </div>
+                            <div>
+                                <label className="scm-label">Email</label>
+                                <input type="email" value={createForm.data.email} onChange={e => createForm.setData('email', e.target.value)} className="scm-input" required />
+                                {createForm.errors.email && <p className="scm-form-error">{createForm.errors.email}</p>}
+                            </div>
+                            <div>
+                                <label className="scm-label">Role</label>
+                                <select value={createForm.data.role_id} onChange={e => createForm.setData('role_id', e.target.value)} className="scm-select" required>
+                                    <option value="">-- Pilih Role --</option>
+                                    {roles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                                </select>
+                                {createForm.errors.role_id && <p className="scm-form-error">{createForm.errors.role_id}</p>}
+                            </div>
+                            <div>
+                                <label className="scm-label">Password</label>
+                                <input type="password" value={createForm.data.password} onChange={e => createForm.setData('password', e.target.value)} className="scm-input" required />
+                            </div>
+                            <div>
+                                <label className="scm-label">Konfirmasi Password</label>
+                                <input type="password" value={createForm.data.password_confirmation} onChange={e => createForm.setData('password_confirmation', e.target.value)} className="scm-input" required />
+                                {createForm.errors.password && <p className="scm-form-error">{createForm.errors.password}</p>}
+                            </div>
+                        </form>
+                    </div>
+                    <div className="scm-panel-footer">
+                        <button onClick={() => setCreateOpen(false)} className="scm-btn scm-btn-secondary">Batal</button>
+                        <button form="create-user-form" type="submit" disabled={createForm.processing} className="scm-btn scm-btn-primary">
+                            {createForm.processing ? 'Menyimpan...' : 'Buat User'}
+                        </button>
+                    </div>
+                </UserPanel>
+            )}
+
+            {/* Edit Panel */}
+            {editingUser && (
+                <UserPanel title={`Edit: ${editingUser.name}`} onClose={() => setEditingUser(null)}>
+                    <div className="scm-panel-body">
+                        <form id="edit-user-form" onSubmit={submitEdit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                            <div>
+                                <label className="scm-label">Nama Lengkap</label>
+                                <input type="text" value={editForm.data.name} onChange={e => editForm.setData('name', e.target.value)} className="scm-input" required />
+                            </div>
+                            <div>
+                                <label className="scm-label">Email</label>
+                                <input type="email" value={editForm.data.email} onChange={e => editForm.setData('email', e.target.value)} className="scm-input" required />
+                            </div>
+                            <div>
+                                <label className="scm-label">Role</label>
+                                <select value={editForm.data.role_id} onChange={e => editForm.setData('role_id', e.target.value)} className="scm-select" required>
+                                    <option value="">-- Pilih Role --</option>
+                                    {roles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <div className="scm-panel-footer">
+                        <button onClick={() => setEditingUser(null)} className="scm-btn scm-btn-secondary">Batal</button>
+                        <button form="edit-user-form" type="submit" disabled={editForm.processing} className="scm-btn scm-btn-primary">
+                            {editForm.processing ? 'Menyimpan...' : 'Perbarui'}
+                        </button>
+                    </div>
+                </UserPanel>
+            )}
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <div className="scm-section-header">
+                    <div>
+                        <h1 className="scm-section-title">Manajemen User</h1>
+                        <p style={{ fontSize: 13, color: 'var(--color-text-faint)', marginTop: 2 }}>{users.length} user terdaftar</p>
+                    </div>
+                    <button onClick={() => setCreateOpen(true)} className="scm-btn scm-btn-primary">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 15, height: 15 }}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Tambah User
+                    </button>
+                </div>
+
+                <div className="scm-card">
+                    <div className="scm-table-responsive">
+                        <table className="scm-table">
+                            <thead>
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bergabung</th>
-                                    <th className="px-6 py-3"></th>
+                                    <th>Nama</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Bergabung</th>
+                                    <th style={{ textAlign: 'right' }}>Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-100">
-                                {users.map((user) => (
-                                    <tr key={user.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm">
-                                                    {user.name[0].toUpperCase()}
+                            <tbody>
+                                {users.map(u => (
+                                    <tr key={u.id}>
+                                        <td>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                <div className="scm-avatar" style={{ width: 28, height: 28, fontSize: 11, flexShrink: 0 }}>
+                                                    {u.name.charAt(0).toUpperCase()}
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                                                    {user.id === auth.user.id && <p className="text-xs text-gray-400">Anda</p>}
+                                                    <div style={{ fontWeight: 500 }}>{u.name}</div>
+                                                    {u.id === currentUserId && <div style={{ fontSize: 10.5, color: 'var(--color-text-faint)' }}>Anda</div>}
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ROLE_COLORS[user.role?.name] ?? 'bg-gray-100 text-gray-700'}`}>
-                                                {user.role?.name ?? 'Tanpa Role'}
-                                            </span>
+                                        <td style={{ color: 'var(--color-text-muted)', fontSize: 12 }}>{u.email}</td>
+                                        <td><span className={ROLE_BADGE[u.role?.name] ?? 'scm-badge scm-badge-gray'}>{u.role?.name ?? '—'}</span></td>
+                                        <td style={{ color: 'var(--color-text-faint)', fontSize: 12 }}>
+                                            {new Date(u.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-gray-500">
-                                            {new Date(user.created_at).toLocaleDateString('id-ID')}
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <button onClick={() => openEdit(user)}
-                                                    className="text-xs font-medium text-indigo-600 hover:text-indigo-900">Edit</button>
-                                                {user.id !== auth.user.id && (
-                                                    <button onClick={() => handleDelete(user)}
-                                                        className="text-xs font-medium text-red-600 hover:text-red-900">Hapus</button>
+                                        <td style={{ textAlign: 'right' }}>
+                                            <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                                                <button onClick={() => openEdit(u)} className="scm-btn scm-btn-secondary scm-btn-sm">Edit</button>
+                                                {u.id !== currentUserId && (
+                                                    <button onClick={() => { useForm({ email: u.email }).delete(route('users.destroy', u.id), { onBefore: () => confirm('Hapus user ini?') }); }} className="scm-btn scm-btn-danger scm-btn-sm">Hapus</button>
                                                 )}
                                             </div>
                                         </td>
@@ -162,18 +202,6 @@ export default function Index({ users, roles }) {
                     </div>
                 </div>
             </div>
-
-            {showCreate && (
-                <Modal title="Tambah User Baru" onClose={() => setShowCreate(false)}>
-                    <UserForm form={createForm} roles={roles} onSubmit={handleCreate} />
-                </Modal>
-            )}
-
-            {editUser && (
-                <Modal title={`Edit User: ${editUser.name}`} onClose={() => setEditUser(null)}>
-                    <UserForm form={editForm} roles={roles} onSubmit={handleEdit} isEdit />
-                </Modal>
-            )}
         </AuthenticatedLayout>
     );
 }

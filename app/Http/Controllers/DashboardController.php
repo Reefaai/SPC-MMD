@@ -55,6 +55,18 @@ class DashboardController extends Controller
         // Aktivitas penerimaan hari ini (untuk Gudang)
         $todayReceipts = Receipt::whereDate('date', today())->count();
 
+        // Chart Data (6 months)
+        $months = collect(range(5, 0))->map(fn ($i) => now()->subMonths($i));
+        $monthlyPO = $months->map(fn ($m) => [
+            'label' => $m->translatedFormat('M Y'),
+            'value' => (float) PurchaseOrder::whereYear('date', $m->year)->whereMonth('date', $m->month)->sum('total_amount'),
+        ])->values();
+        
+        $monthlySO = $months->map(fn ($m) => [
+            'label' => $m->translatedFormat('M Y'),
+            'value' => (float) SalesOrder::whereYear('date', $m->year)->whereMonth('date', $m->month)->sum('total_amount'),
+        ])->values();
+
         return Inertia::render('Dashboard', [
             'metrics' => [
                 'total_products' => $totalProducts,
@@ -67,6 +79,10 @@ class DashboardController extends Controller
                 'today_sos' => $todaySOs,
                 'today_so_value' => $todaySOValue,
                 'today_receipts' => $todayReceipts,
+            ],
+            'charts' => [
+                'monthlyPO' => $monthlyPO,
+                'monthlySO' => $monthlySO,
             ],
             'stockSummary' => $stockSummary,
             'recentTransactions' => $recentTransactions,

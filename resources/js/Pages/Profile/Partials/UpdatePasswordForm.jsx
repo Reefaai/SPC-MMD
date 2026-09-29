@@ -46,18 +46,17 @@ export default function UpdatePasswordForm({ className = '' }) {
 
     return (
         <section className={className}>
-            <header>
-                <h2 className="text-lg font-medium text-gray-900">
+            <header style={{ marginBottom: 24 }}>
+                <h2 className="scm-card-title">
                     Update Password
                 </h2>
 
-                <p className="mt-1 text-sm text-gray-600">
-                    Ensure your account is using a long, random password to stay
-                    secure.
+                <p className="scm-card-subtitle" style={{ marginTop: 4 }}>
+                    Pastikan akun Anda menggunakan kata sandi acak yang panjang agar tetap aman.
                 </p>
             </header>
 
-            <form onSubmit={updatePassword} className="mt-6 space-y-6">
+            <form onSubmit={updatePassword} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 <div>
                     <InputLabel
                         htmlFor="current_password"
@@ -131,8 +130,8 @@ export default function UpdatePasswordForm({ className = '' }) {
                         leave="transition ease-in-out"
                         leaveTo="opacity-0"
                     >
-                        <p className="text-sm text-gray-600">
-                            Saved.
+                        <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                            Tersimpan.
                         </p>
                     </Transition>
                 </div>
