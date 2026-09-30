@@ -61,7 +61,8 @@ return [
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
-            ]) : [],
+                Mysql::ATTR_SSL_VERIFY_SERVER_CERT => env('DB_SSL_VERIFY') !== null ? filter_var(env('DB_SSL_VERIFY'), FILTER_VALIDATE_BOOLEAN) : null,
+            ], fn ($value) => ! is_null($value)) : [],
         ],
 
         'mariadb' => [
