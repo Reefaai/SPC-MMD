@@ -1,6 +1,6 @@
 # Supply Chain Management (SCM) System
 
-Sebuah aplikasi Supply Chain Management yang dibangun menggunakan **Laravel 11**, **React**, dan **Inertia.js** (berbasis arsitektur Monolith modern). Sistem ini dirancang untuk mengelola inventaris, pembelian (Purchase Orders), penerimaan barang (Receipts), penjualan (Sales Orders), pelaporan, dan sistem notifikasi *low-stock* secara real-time.
+Sebuah aplikasi Supply Chain Management yang dibangun menggunakan **Laravel**, **React**, dan **Inertia.js** (berbasis arsitektur Monolith modern). Sistem ini dirancang untuk mengelola inventaris, pembelian (Purchase Orders), penerimaan barang (Receipts), penjualan (Sales Orders), pelaporan, dan sistem notifikasi *low-stock* secara real-time.
 
 ## Fitur Utama
 
@@ -14,22 +14,22 @@ Sebuah aplikasi Supply Chain Management yang dibangun menggunakan **Laravel 11**
 
 ## Prasyarat (*Requirements*)
 
-Pastikan sistem Anda telah memiliki komponen-komponen berikut:
-- **PHP** >= 8.2
+Pastikan sistem di device Anda telah terpasang:
+- **PHP** >= 8.3 (dengan ekstensi `pdo_mysql`, `mbstring`, `openssl`, `tokenizer`, `xml`, `ctype`, `bcmath`, `curl`)
 - **Composer** (untuk PHP dependencies)
 - **Node.js** >= 18 & **NPM** (untuk frontend dependencies)
 - **MySQL** / MariaDB
 - Git
 
-## Instalasi (Clone & Development Ready)
+## Instalasi di Device Baru
 
 Ikuti langkah-langkah di bawah ini untuk menjalankan aplikasi di komputer lokal Anda:
 
 ### 1. Clone Repository
 
 ```bash
-git clone <URL_REPOSITORY_ANDA>
-cd <NAMA_FOLDER_PROJECT>
+git clone https://github.com/Reefaai/SPC-MMD.git
+cd SPC-MMD
 ```
 
 ### 2. Install Dependencies
@@ -44,22 +44,30 @@ Install package Node.js via NPM:
 npm install
 ```
 
-### 3. Konfigurasi Environment (Database)
+### 3. Konfigurasi Environment & Database
 
-Copy file konfigurasi environment:
+Copy file template environment:
 ```bash
 cp .env.example .env
 ```
 
-Buka file `.env` dan sesuaikan koneksi *database* Anda. Pastikan database MySQL dengan nama tersebut sudah Anda buat.
+Buka file `.env` dan sesuaikan koneksi database. Pastikan database MySQL sudah dibuat terlebih dahulu (misalnya bernama `spc_mmd`).
+
 ```env
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=nama_database_anda
+DB_DATABASE=spc_mmd
 DB_USERNAME=root
 DB_PASSWORD=password_anda
 ```
+
+> **Catatan Penting:** 
+> - File `.env.example` bawaan memiliki default `DB_CONNECTION=sqlite`. Pastikan Anda mengubahnya menjadi `DB_CONNECTION=mysql` dan menyesuaikan kredensial di atas.
+> - **Khusus pengguna Linux / macOS:** Jika terjadi kendala permission folder, berikan akses tulis dengan perintah:
+>   ```bash
+>   chmod -R 775 storage bootstrap/cache
+>   ```
 
 ### 4. Generate Application Key
 
@@ -69,7 +77,7 @@ php artisan key:generate
 
 ### 5. Migrate & Seed Database
 
-Langkah ini sangat penting untuk membangun tabel di database beserta **Data Dummy** (User, Produk, Stok, Transaksi) agar aplikasi siap diuji coba:
+Langkah ini akan membangun tabel di database beserta **Data Dummy** (User dengan Role, Produk, Kategori, Supplier, Gudang, Stok, & Transaksi):
 
 ```bash
 php artisan migrate:fresh --seed
@@ -77,17 +85,17 @@ php artisan migrate:fresh --seed
 
 ### 6. Jalankan Server Development
 
-Aplikasi Laravel + React/Inertia membutuhkan **dua terminal** yang berjalan bersamaan di tahap *development*.
+Aplikasi dapat dijalankan melalui salah satu dari dua cara berikut:
 
-**Terminal 1 (Vite Frontend Server):**
+**Opsi 1 (Satu Perintah - Praktis):**
 ```bash
-npm run dev
+composer run dev
 ```
+*(Perintah ini otomatis menjalankan server Laravel dan Vite secara bersamaan dalam satu terminal).*
 
-**Terminal 2 (Laravel Backend Server):**
-```bash
-php artisan serve
-```
+**Opsi 2 (Dua Terminal Terpisah):**
+- **Terminal 1:** `npm run dev`
+- **Terminal 2:** `php artisan serve`
 
 Aplikasi sekarang dapat diakses di browser melalui URL: `http://localhost:8000`
 
