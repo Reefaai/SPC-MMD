@@ -2266,3 +2266,59 @@ input[type="date"].scm-input::-webkit-calendar-picker-indicator:hover {
         grid-template-columns: 1fr;
     }
 }
+
+/* ─── Reports Summary Metric Cards (Desktop & Mobile) ────────── */
+.scm-report-metric,
+.scm-reports-summary-grid .scm-metric {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    min-height: auto !important;
+    height: auto !important;
+    padding: 14px 16px !important;
+    gap: 12px !important;
+}
+
+.scm-report-metric .scm-metric-value,
+.scm-reports-summary-grid .scm-metric .scm-metric-value {
+    white-space: normal !important;
+    word-break: break-word !important;
+    font-size: clamp(15px, 2.8vw, 18px) !important;
+}
+
+.scm-report-metric .scm-metric-label,
+.scm-reports-summary-grid .scm-metric .scm-metric-label {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    width: auto !important;
+}
+
+.scm-report-metric .scm-metric-sub,
+.scm-reports-summary-grid .scm-metric .scm-metric-sub {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    width: auto !important;
+}
+
+.scm-report-bar {
+    width: 4px;
+    height: 38px;
+    border-radius: 9999px;
+    flex-shrink: 0;
+    align-self: center !important;
+}
+
+@media (max-width: 768px) {
+    .scm-report-metric,
+    .scm-reports-summary-grid .scm-metric {
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        min-height: auto !important;
+        height: auto !important;
+        padding: 14px 16px !important;
+    }
+}

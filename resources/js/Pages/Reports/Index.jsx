@@ -5,7 +5,7 @@ const fmt = (val) => `Rp ${Number(val ?? 0).toLocaleString('id-ID')}`;
 
 function MetricCard({ title, value, sub, color }) {
     return (
-        <div className="scm-metric" style={{ padding: '14px 16px' }}>
+        <div className="scm-metric scm-report-metric" style={{ padding: '14px 16px' }}>
             <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="scm-metric-label">{title}</div>
                 <div className="scm-metric-value" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', wordBreak: 'break-word' }}>{value}</div>
@@ -18,10 +18,13 @@ function MetricCard({ title, value, sub, color }) {
                     }}>{sub}</div>
                 )}
             </div>
-            <div style={{
-                width: 4, height: 36, borderRadius: 2,
-                background: color, flexShrink: 0, alignSelf: 'center',
-            }} />
+            <div
+                className="scm-report-bar"
+                style={{
+                    backgroundColor: color,
+                    boxShadow: `0 0 10px ${color}55`,
+                }}
+            />
         </div>
     );
 }
